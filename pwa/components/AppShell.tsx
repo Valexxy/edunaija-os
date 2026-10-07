@@ -414,7 +414,46 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <span className="text-emerald-400">2026 Grid</span>
                   </div>
 
-                  {/* 1. Quick Interactive Guide */}
+                  {/* 1. National & Class Leaderboard */}
+                  <Link
+                    href="/leaderboard"
+                    onClick={() => setIsMoreMenuOpen(false)}
+                    className="w-full px-3 py-2 rounded-xl hover:bg-white/5 text-xs font-bold text-zinc-200 hover:text-white flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-amber-400">🏆</span>
+                      <span>Leaderboard &amp; Standings</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-amber-300">15 Classes</span>
+                  </Link>
+
+                  {/* 2. Nationwide Competitions & Arenas */}
+                  <Link
+                    href="/competition"
+                    onClick={() => setIsMoreMenuOpen(false)}
+                    className="w-full px-3 py-2 rounded-xl hover:bg-white/5 text-xs font-bold text-zinc-200 hover:text-white flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-red-400">⚔️</span>
+                      <span>Competitions &amp; Showdowns</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400">Live</span>
+                  </Link>
+
+                  {/* 3. ₦0 Data Offline Engine */}
+                  <Link
+                    href="/zero-data"
+                    onClick={() => setIsMoreMenuOpen(false)}
+                    className="w-full px-3 py-2 rounded-xl hover:bg-white/5 text-xs font-bold text-zinc-200 hover:text-white flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" />
+                      <span>₦0 Data Offline Vault</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400">100% Free</span>
+                  </Link>
+
+                  {/* 4. Quick Interactive Guide */}
                   <button
                     onClick={() => {
                       sfx.tap();
@@ -426,13 +465,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     className="w-full px-3 py-2 rounded-xl hover:bg-white/5 text-xs font-bold text-zinc-200 hover:text-white flex items-center justify-between transition-colors cursor-pointer group"
                   >
                     <span className="flex items-center gap-2">
-                      <span className="text-amber-300">❓</span>
+                      <span className="text-cyan-300">❓</span>
                       <span>How-To Guide &amp; Tour</span>
                     </span>
                     <span className="text-[10px] text-zinc-400 font-mono">Walkthrough</span>
                   </button>
 
-                  {/* 2. Security Clearance Gate */}
+                  {/* 5. Security Clearance Gate */}
                   <button
                     onClick={() => {
                       sfx.tap();
@@ -450,20 +489,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     </span>
                   </button>
 
-                  {/* 3. ₦0 Data Offline Engine */}
-                  <Link
-                    href="/zero-data"
-                    onClick={() => setIsMoreMenuOpen(false)}
-                    className="w-full px-3 py-2 rounded-xl hover:bg-white/5 text-xs font-bold text-zinc-200 hover:text-white flex items-center justify-between transition-colors cursor-pointer group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" />
-                      <span>₦0 Data Offline Vault</span>
-                    </span>
-                    <span className="text-[10px] font-mono text-emerald-400">100% Free</span>
-                  </Link>
-
-                  {/* 4. Full Command Center */}
+                  {/* 6. Full Command Center */}
                   <button
                     onClick={() => {
                       sfx.tap();
@@ -474,7 +500,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     <span className="flex items-center gap-2">
                       <span className="text-amber-400">⚡</span>
-                      <span>Search Everything</span>
+                      <span>Search All 47 Sections</span>
                     </span>
                     <span className="text-[10px] font-mono text-zinc-400">Ctrl+K</span>
                   </button>
