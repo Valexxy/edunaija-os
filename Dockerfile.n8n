@@ -1,6 +1,9 @@
-﻿FROM node:18-alpine
-RUN npm install -g n8n
+FROM n8nio/n8n:latest
+
+USER root
 ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
+ENV N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
 EXPOSE 5678
-CMD ["n8n"]
+
+CMD ["sh", "-c", "export N8N_PORT=${PORT:-5678} && n8n"]
