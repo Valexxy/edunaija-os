@@ -1,0 +1,5 @@
+﻿{
+  "buildCommand": "cd pwa && npm run build",
+  "outputDirectory": "pwa/.next",
+  "installCommand": "cd pwa && npm install"
+}
