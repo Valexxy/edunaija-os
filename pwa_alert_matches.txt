@@ -1,0 +1,9 @@
+pwa\app\news\page.tsx:185: onClick={() => { sfx.tap(); alert(`Opening direct application portal for ${s.title}`); }}
+pwa\app\parent\page.tsx:10: alert("Redirecting to Paystack Secure Checkout for ₦5,000 Season Pass...");
+pwa\app\school-admin\page.tsx:72: onClick={() => { sfx.tap(); alert("Opening Live Center Proctored Room Monitor"); }}
+pwa\app\school-admin\page.tsx:83: onClick={() => { sfx.streakCelebration(); alert("Exported High-Res Instagram & WhatsApp Congratulatory Scorecards for Center!"); }}
+pwa\app\sponsors\page.tsx:482: alert("Certificate link copied to clipboard!");
+pwa\app\tutor\page.tsx:96: onClick={() => { sfx.tap(); alert("Opening WAEC Theory AI Grader Queue"); }}
+pwa\app\tutor\page.tsx:123: onClick={() => { sfx.tap(); alert(`Dispatched ${s.action} to ${s.name}`); }}
+pwa\app\tutor\page.tsx:137: onClick={() => { sfx.tap(); alert("Dispatching custom 30-question test to cohorts"); }}
+pwa\app\vouchers\page.tsx:77: alert("Error generating batch");

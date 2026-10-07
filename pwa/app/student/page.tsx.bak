@@ -1,0 +1,1817 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { 
+  Zap, Flame, Trophy, BookOpen, ChevronRight, ShieldAlert, Sparkles, 
+  Share2, Users, Bell, Clock, Calendar, ArrowRight, FileCheck2, Radio, CheckCircle2,
+  ExternalLink, RefreshCw, Bot, MapPin, Compass, Terminal, GraduationCap, School, Lock, Unlock,
+  KeyRound, Brain, AlertTriangle, Eye
+} from "lucide-react";
+import HeartBar from "../../components/HeartBar";
+import UserProfileModal from "../../components/UserProfileModal";
+import ClassPromotionModal from "../../components/ClassPromotionModal";
+import SmartAmbientGreeting from "../../components/SmartAmbientGreeting";
+import SmartResumeCard from "../../components/SmartResumeCard";
+import VerifiableLearningHistoryModal from "../../components/VerifiableLearningHistoryModal";
+import AddToCalendarModal from "../../components/AddToCalendarModal";
+import InteractiveCampusMap from "../../components/InteractiveCampusMap";
+import DevModeToggle from "../../components/DevModeToggle";
+import CognitiveSynapseGraph from "../../components/CognitiveSynapseGraph";
+import RoadToGradeAWidget from "../../components/RoadToGradeAWidget";
+import { sfx } from "../../lib/audio";
+import { initTelegramMiniApp, triggerTmaHaptic } from "../../lib/telegram";
+
+export default function StudentDashboard() {
+  const [showdownCountdown, setShowdownCountdown] = useState({ days: 1, hours: 5, mins: 24, secs: 30 });
+  const [user, setUser] = useState<any>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isGuestPreview, setIsGuestPreview] = useState(false);
+
+  // Academic Track (Arts vs Science vs Commercial vs 100L) & Institutional Clearinghouse
+  const [academicTrack, setAcademicTrack] = useState<string>("SCIENCE");
+  const [institutionalRadar, setInstitutionalRadar] = useState<any[]>([]);
+  const [prescribedLit, setPrescribedLit] = useState<any[]>([]);
+  const [isChangingTrack, setIsChangingTrack] = useState(false);
+
+  // Dynamic Class Progression State (Primary to 100L)
+  const [classTier, setClassTier] = useState<string>("UTME");
+
+  // Anti-Cheat Class Promotion Modal State
+  const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [isDevMode, setIsDevMode] = useState(false);
+  const [targetPromotionTier, setTargetPromotionTier] = useState<string>("SSS");
+
+  // High-Yield Monetization Modals
+  const [isParentModalOpen, setIsParentModalOpen] = useState(false);
+  const [isSchoolModalOpen, setIsSchoolModalOpen] = useState(false);
+  const [parentName, setParentName] = useState("");
+  const [parentPhone, setParentPhone] = useState("");
+  const [parentPlan, setParentPlan] = useState("guardian_monthly");
+  const [parentSuccessMsg, setParentSuccessMsg] = useState<string | null>(null);
+
+  const [schoolName, setSchoolName] = useState("");
+  const [schoolEmail, setSchoolEmail] = useState("");
+  const [schoolPhone, setSchoolPhone] = useState("");
+  const [schoolSeats, setSchoolSeats] = useState(250);
+  const [schoolSuccessMsg, setSchoolSuccessMsg] = useState<string | null>(null);
+
+  // Live External Feeds State
+  const [portalFeeds, setPortalFeeds] = useState<any[]>([]);
+  const [isSyncingFeeds, setIsSyncingFeeds] = useState(false);
+  const [liveStats, setLiveStats] = useState<any>(null);
+
+  // Sync user state from localStorage and cross-component custom events
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("edunaija_user");
+      let activeTier = "UTME";
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setUser(parsed);
+          const raw = parsed.class_tier || parsed.grade_level;
+          if (raw) activeTier = String(raw).toUpperCase();
+        } catch {}
+      } else {
+        const savedTier = localStorage.getItem("edunaija_class_tier") || localStorage.getItem("edunaija_academic_tier");
+        if (savedTier) activeTier = String(savedTier).toUpperCase();
+      }
+      setClassTier(activeTier);
+      localStorage.setItem("edunaija_class_tier", activeTier);
+
+      const activeDev = localStorage.getItem("edunaija_dev_mode") === "true";
+      setIsDevMode(activeDev);
+
+      const handleUserUpdated = (e: any) => {
+        if (e.detail) {
+          setUser(e.detail);
+          const raw = e.detail.class_tier || e.detail.grade_level;
+          if (raw) {
+            const norm = String(raw).toUpperCase();
+            setClassTier(norm);
+            localStorage.setItem("edunaija_class_tier", norm);
+          }
+        }
+      };
+      const handleDevModeUpdated = (e: any) => {
+        if (e.detail?.isDevMode !== undefined) setIsDevMode(e.detail.isDevMode);
+      };
+
+      window.addEventListener("edunaija_user_updated", handleUserUpdated);
+      window.addEventListener("edunaija_devmode_updated", handleDevModeUpdated);
+      return () => {
+        window.removeEventListener("edunaija_user_updated", handleUserUpdated);
+        window.removeEventListener("edunaija_devmode_updated", handleDevModeUpdated);
+      };
+    }
+  }, []);
+
+  // Fetch Institutional Cut-off Radar & Prescribed Literature when track changes
+  useEffect(() => {
+    async function loadTrackData() {
+      try {
+        const [radarRes, litRes] = await Promise.all([
+          fetch(`http://127.0.0.1:8000/api/tracks/institutional-radar?track=${academicTrack}&limit=6`),
+          fetch(`http://127.0.0.1:8000/api/tracks/literature?track=${academicTrack}`)
+        ]);
+        if (radarRes.ok) {
+          const rData = await radarRes.json();
+          setInstitutionalRadar(rData.radar_data || []);
+        }
+        if (litRes.ok) {
+          const lData = await litRes.json();
+          setPrescribedLit(lData.literature_texts || []);
+        }
+      } catch (err) {
+        console.warn("Track data fetch error:", err);
+      }
+    }
+    loadTrackData();
+  }, [academicTrack]);
+
+  const handleTrackChange = async (newTrack: string) => {
+    sfx.tap();
+    triggerTmaHaptic("medium");
+    setAcademicTrack(newTrack);
+    const key = user?.registration_key || (typeof window !== "undefined" ? localStorage.getItem("edunaija_user_key") : null);
+    if (key) {
+      setIsChangingTrack(true);
+      try {
+        await fetch("http://127.0.0.1:8000/api/tracks/set-student-track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_key: key, academic_track: newTrack })
+        });
+        // Dispatch update so widget re-calibrates
+        const updatedUser = { ...user, academic_track: newTrack };
+        setUser(updatedUser);
+        localStorage.setItem("edunaija_user", JSON.stringify(updatedUser));
+        window.dispatchEvent(new CustomEvent("edunaija_user_updated", { detail: updatedUser }));
+      } catch {} finally {
+        setIsChangingTrack(false);
+      }
+    }
+  };
+
+  // Real-Time live student metrics from SQLite pipeline
+  useEffect(() => {
+    async function loadLiveStats() {
+      const regKey = user?.registration_key || (typeof window !== "undefined" ? localStorage.getItem("edunaija_user_key") || "REG-2025-8841" : "REG-2025-8841");
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/quiz/live-stats/${regKey}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLiveStats(data);
+        }
+      } catch (err) {
+        console.warn("Live stats load error:", err);
+      }
+    }
+    loadLiveStats();
+  }, [user]);
+
+  // Fetch verified educational portal feeds
+  const fetchPortalFeeds = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/sync/feeds");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.feeds) setPortalFeeds(data.feeds.slice(0, 3));
+      }
+    } catch {}
+  };
+
+  const handleRefreshFeeds = async () => {
+    sfx.tap();
+    setIsSyncingFeeds(true);
+    try {
+      await fetch("http://127.0.0.1:8000/sync/refresh", { method: "POST" });
+      await fetchPortalFeeds();
+    } catch {}
+    setIsSyncingFeeds(false);
+  };
+
+  useEffect(() => {
+    fetchPortalFeeds();
+  }, []);
+
+  useEffect(() => {
+    initTelegramMiniApp();
+
+    const updateTimer = () => {
+      const now = new Date();
+      const nextSunday = new Date();
+      const day = nextSunday.getDay();
+      const daysUntilSunday = (7 - day) % 7;
+      nextSunday.setDate(nextSunday.getDate() + daysUntilSunday);
+      nextSunday.setHours(20, 0, 0, 0);
+
+      const diff = Math.max(0, nextSunday.getTime() - now.getTime());
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setShowdownCountdown({ days: d, hours: h, mins: m, secs: s });
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const playClick = () => {
+    sfx.tap();
+    triggerTmaHaptic("light");
+  };
+
+  const handleSubscribeParent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sfx.tap();
+    try {
+      const res = await fetch("http://127.0.0.1:8000/monetization/parent-pass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parent_name: parentName,
+          parent_phone: parentPhone,
+          student_key: user?.registration_key || "EDU-2025-DEMO",
+          plan_type: parentPlan
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setParentSuccessMsg(`🎉 Guardian Angel Pass Activated! Sub ID: ${data.subscription_id}. Friday reports will be sent to ${parentPhone}`);
+        sfx.correct();
+      }
+    } catch {
+      sfx.wrong();
+    }
+  };
+
+  const handleActivateSchool = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sfx.tap();
+    try {
+      const res = await fetch("http://127.0.0.1:8000/monetization/school-license", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          school_name: schoolName,
+          admin_email: schoolEmail,
+          admin_phone: schoolPhone,
+          state: "Lagos",
+          licensed_students: schoolSeats
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSchoolSuccessMsg(`🏫 School Term License Activated! Master Key: ${data.license_key}. Allocated ${data.licensed_students} offline CBT seats.`);
+        sfx.correct();
+      }
+    } catch {
+      sfx.wrong();
+    }
+  };
+
+  const isPrimary = classTier === "PRIMARY";
+  const isJss = classTier === "JSS";
+  const isSss = classTier === "SSS";
+  const isFreshman = classTier === "FRESHMAN";
+
+  const displayName = user?.full_name || user?.fullName || (isPrimary ? "Tobi Adeleke" : "Chisom");
+  const targetUniText = user?.target_uni || (isPrimary ? "King's College Lagos (Junior School)" : isJss ? "Senior Model College" : isFreshman ? "Faculty of Science" : "UNILAG");
+  const targetCourseText = user?.target_course || (isPrimary ? "Common Entrance Distinction" : isJss ? "Junior Science Stream" : isFreshman ? "Computer Science" : "Medicine & Surgery");
+  const targetScoreValue = user?.target_score || (isPrimary ? 95 : isJss ? 88 : isFreshman ? 4.85 : 290);
+  const examTypeText = user?.exam_type || (isPrimary ? "National Common Entrance Examination (NCEE)" : isJss ? "BECE 2026" : isSss ? "WAEC SSCE" : isFreshman ? "100L Semester 1" : "JAMB UTME 2026");
+
+  return (
+    <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen text-white font-sans space-y-6">
+      
+      {/* 1. Individualized Road to Grade A Cognitive Trajectory Widget (Strictly Auth Pipelined) */}
+      {user ? (
+        <RoadToGradeAWidget userKey={user.registration_key} />
+      ) : (
+        <div className="w-full rounded-3xl bg-gradient-to-br from-emerald-950/40 via-black/80 to-zinc-950 border border-emerald-500/30 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
+          {/* Background Specular Mesh */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#00E676]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[#00E676] text-xs font-mono font-bold">
+                <Brain className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Bloom 2-Sigma Mastery Engine &bull; Individualized Database Pipeline</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-display font-black text-white tracking-tight">
+                Your Individualized Road to Grade A
+              </h2>
+              <p className="text-zinc-300 text-sm leading-relaxed">
+                You are not taught like every other student. This system diagnoses your exact prerequisite knowledge gaps and delivers pedagogical interventions tuned to your cognitive style.
+                <strong className="text-white block mt-1">Sign in or register your student account to activate your personal baseline, unlock Socratic gap repair, and persist all milestones in the national database.</strong>
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  sfx.tap();
+                  window.dispatchEvent(new CustomEvent("open_auth_modal"));
+                }}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-[#00E676] to-teal-400 text-black font-display font-black text-sm hover:brightness-110 active:scale-95 transition-all shadow-[0_0_25px_rgba(0,230,118,0.4)] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <KeyRound className="w-4 h-4 stroke-[2.5]" />
+                <span>Sign In / Register Student Profile</span>
+              </button>
+              <button
+                onClick={() => {
+                  sfx.tap();
+                  setIsGuestPreview(!isGuestPreview);
+                }}
+                className="px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{isGuestPreview ? "Hide Sample Trajectory" : "Preview Sample Grade A Trajectory"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Optional Guest Preview with clear watermark banner */}
+          {isGuestPreview && (
+            <div className="mt-6 pt-6 border-t border-white/10 relative">
+              <div className="mb-3 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Guest Preview Mode &bull; Changes are not persisted to database. Register or sign in to save your personal Grade A roadmap.</span>
+                </span>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent("open_auth_modal"))}
+                  className="text-xs underline font-bold hover:text-white shrink-0 ml-3"
+                >
+                  Create Permanent Account &rarr;
+                </button>
+              </div>
+              <RoadToGradeAWidget userKey="DEMO-UTME-2025" isGuestPreview={true} />
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Academic Track Discipline Hub & Verified Institutional Clearinghouse */}
+      <div className="w-full rounded-3xl bg-white/[0.03] border border-white/10 p-5 sm:p-6 backdrop-blur-xl shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div>
+            <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-[#00E676]" />
+              Academic Discipline Track &amp; Clearinghouse Radar
+            </span>
+            <h3 className="text-lg font-display font-black text-white">
+              Tailored Educational Resources &amp; Institutional Cut-Offs
+            </h3>
+          </div>
+          
+          {/* 4-Track Switcher */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {[
+              { id: "SCIENCE", label: "Science & STEM", icon: "🔬" },
+              { id: "ARTS", label: "Arts & Law", icon: "⚖️" },
+              { id: "COMMERCIAL", label: "Commercial & Business", icon: "💼" },
+              { id: "TERTIARY_CCMAS", label: "100L CCMAS", icon: "🎓" }
+            ].map((tr) => (
+              <button
+                key={tr.id}
+                onClick={() => handleTrackChange(tr.id)}
+                disabled={isChangingTrack}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  academicTrack === tr.id
+                    ? "bg-gradient-to-r from-emerald-500 to-[#00E676] text-black font-black shadow-[0_0_15px_rgba(0,230,118,0.3)]"
+                    : "bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/5"
+                }`}
+              >
+                <span>{tr.icon}</span>
+                <span>{tr.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2-Column Split: Verified Institutional Cut-Off Radar (Left) & Prescribed Literature/Syllabus (Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          {/* Left: Verified Institutional Radar (7 cols) */}
+          <div className="lg:col-span-7 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-zinc-300 flex items-center gap-1.5">
+                <School className="w-3.5 h-3.5 text-emerald-400" />
+                Accredited Institutional Cut-Off Radar ({academicTrack})
+              </span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                2026 Admissions
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {institutionalRadar.map((inst, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-2xl bg-black/40 border border-white/10 hover:border-emerald-500/30 transition-all space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded">
+                      {inst.short_name} &bull; {inst.state}
+                    </span>
+                    <span className="text-xs font-black text-[#00E676] font-mono">
+                      {inst.post_utme_aggregate} Agg
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-white line-clamp-1">
+                    {inst.department}
+                  </div>
+                  <div className="text-[10px] text-zinc-400 font-mono flex items-center justify-between border-t border-white/5 pt-1">
+                    <span>{inst.screening_format.split('+')[0].trim()}</span>
+                    <strong className="text-amber-300">₦{inst.tuition_estimate_ngn.toLocaleString()}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Prescribed Literature & Critical Study Hub (5 cols) */}
+          <div className="lg:col-span-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-zinc-300 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                Prescribed Texts &amp; Saccadic Reading
+              </span>
+              <Link
+                href="/reader"
+                className="text-[10px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
+              >
+                <span>Full Library</span>
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="space-y-2">
+              {prescribedLit.slice(0, 3).map((book, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3 hover:border-amber-400/30 transition-all"
+                >
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] font-mono text-amber-300 bg-amber-500/10 px-1.5 py-0.2 rounded font-bold">
+                      {book.genre}
+                    </span>
+                    <div className="text-xs font-bold text-white line-clamp-1">
+                      {book.title}
+                    </div>
+                    <div className="text-[10px] text-zinc-400">
+                      by {book.author}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/reader`}
+                    className="shrink-0 px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold font-mono transition-all flex items-center gap-1"
+                  >
+                    <span>Read</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              ))}
+              {prescribedLit.length === 0 && (
+                <div className="p-4 rounded-2xl bg-black/30 border border-white/5 text-center text-xs text-zinc-500 font-mono">
+                  Loading track curriculum resources...
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Laptop & Desktop 2-Column Bento Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* ================= LEFT MAIN WORKSPACE (lg:col-span-8) ================= */}
+        <div className="lg:col-span-8 space-y-6">
+          
+          {/* 5-TIER DYNAMIC CLASS PROGRESSION SWITCHER */}
+          <div className="glass-card p-4 rounded-3xl border border-white/10 bg-black/40">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-[#00E676]" /> Active Academic Tier:
+                <span className="text-[#00E676] font-black">{classTier}</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <Link href="/curriculum" className="text-xs text-blue-400 hover:text-blue-300 font-mono flex items-center gap-1 transition-colors">
+                  Curriculum →
+                </Link>
+              </div>
+            </div>
+            <div className="grid grid-cols-5 gap-2 bg-black/60 p-1.5 rounded-2xl border border-white/10 text-center">
+              {[
+                { id: "PRIMARY", label: "Primary", icon: "🎒", sub: "Basic 1-6" },
+                { id: "JSS", label: "JSS 1-3", icon: "📘", sub: "Basic 7-9" },
+                { id: "SSS", label: "SSS 1-2", icon: "🔬", sub: "Senior" },
+                { id: "UTME", label: "JAMB/WAEC", icon: "⚡", sub: "Candidate" },
+                { id: "FRESHMAN", label: "100L", icon: "🎓", sub: "University" },
+              ].map(tier => (
+                <button
+                  key={tier.id}
+                  onClick={() => {
+                    sfx.tap();
+                    triggerTmaHaptic("light");
+                    if (isDevMode) {
+                      // Dev Mode instantaneous switch without exam barrier
+                      setClassTier(tier.id);
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("edunaija_class_tier", tier.id);
+                        localStorage.setItem("edunaija_academic_tier", tier.id);
+                        window.dispatchEvent(new CustomEvent("edunaija_user_updated", {
+                          detail: { ...(user || {}), class_tier: tier.id, grade_level: tier.id }
+                        }));
+                      }
+                    } else if (classTier !== tier.id) {
+                      setTargetPromotionTier(tier.id);
+                      setIsPromotionModalOpen(true);
+                    }
+                  }}
+                  className={`py-2.5 px-1.5 rounded-xl transition-all flex flex-col items-center justify-center cursor-pointer ${
+                    classTier === tier.id
+                      ? "bg-[#00E676] text-black font-black shadow-[0_0_15px_rgba(0,230,118,0.4)] scale-105"
+                      : "text-zinc-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <span className="text-sm">{tier.icon}</span>
+                  <span className="text-[11px] font-bold leading-tight mt-0.5">{tier.label}</span>
+                  <span className="text-[9px] opacity-70 hidden sm:inline">{tier.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Smart Ambient Context: Location, WAT Time & Live Open-Meteo Weather */}
+          <SmartAmbientGreeting user={user} />
+
+          {/* Smart Continuous Learning Locus: Resume Where You Left Off */}
+          <SmartResumeCard user={user} />
+
+          {/* Hero Trajectory Card (Spacious Bento Header) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-3xl p-6 relative overflow-hidden border border-white/10 bg-gradient-to-br from-emerald-950/20 via-black to-zinc-950 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <div>
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider bg-naija-green/20 text-[#00E676] border border-naija-green/30 mb-2 font-mono">
+                  {examTypeText} • {classTier === "PRIMARY" ? "PRIMARY 5 FOUNDATION" : classTier === "JSS" ? "JUNIOR BECE CALIBRATION" : classTier === "SSS" ? "SENIOR WAEC / NECO TARGET" : classTier === "FRESHMAN" ? "UNIVERSITY 100L ACADEMIC TRACK" : "UTME SOVEREIGN TARGET"}
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-white mb-1">
+                  {classTier === "PRIMARY" ? "Term 2 Active" : classTier === "JSS" ? "54 Days to BECE" : classTier === "SSS" ? "62 Days to SSCE" : classTier === "FRESHMAN" ? "Semester 1 Active" : "47 Days to JAMB"}
+                </h1>
+                <p className="text-zinc-300 text-sm font-medium">
+                  Welcome back, <strong className="text-white">{displayName}</strong>. You are <span className="text-[#00E676] font-bold">{Math.round(liveStats?.cumulative_mastery || (classTier === 'PRIMARY' ? 92 : classTier === 'FRESHMAN' ? 96 : 85))}% syllabus ready</span> ⚡
+                </p>
+              </div>
+
+              {/* Circular Score Gauge */}
+              <div className="relative flex items-center justify-center w-28 h-28 self-center sm:self-auto shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-zinc-800"
+                    strokeWidth="3.5"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-[#00E676] drop-shadow-[0_0_12px_rgba(0,230,118,0.7)]"
+                    strokeDasharray={`${Math.round(liveStats?.cumulative_mastery || (classTier === 'PRIMARY' ? 92 : classTier === 'FRESHMAN' ? 96 : 85))}, 100`}
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    {classTier === "PRIMARY" || classTier === "JSS" ? "Mastery" : classTier === "FRESHMAN" ? "CGPA" : "Predicted"}
+                  </span>
+                  <span className="text-xl font-display font-black text-white leading-none">
+                    {classTier === "PRIMARY" ? "94%" : classTier === "JSS" ? "86%" : classTier === "FRESHMAN" ? "4.82" : (liveStats?.predicted_score || 294)}
+                    <span className="text-xs text-zinc-400 font-normal">
+                      {classTier === "PRIMARY" || classTier === "JSS" ? "" : classTier === "FRESHMAN" ? "/5.0" : "/400"}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-xs text-zinc-400 flex flex-wrap items-center justify-between pt-3 border-t border-white/10 gap-2">
+              <span>Goal: <strong className="text-white">{targetUniText} • {targetCourseText} (Target: {targetScoreValue})</strong></span>
+              <span className="text-[#00E676] font-bold flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" /> 
+                {classTier === "FRESHMAN" 
+                  ? "First Class Honours Safe Zone" 
+                  : `${Math.max(0, targetScoreValue - (liveStats?.predicted_score || (classTier === 'PRIMARY' ? 94 : 294)))} pts from merit safe zone`}
+              </span>
+            </div>
+          </motion.div>
+
+          {/* 100% Verifiable Academic Audit Ledger Banner */}
+          <div className="glass-card rounded-3xl p-5 border border-emerald-500/20 bg-gradient-to-r from-emerald-950/30 via-zinc-900/60 to-black/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] shrink-0">
+                <FileCheck2 className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-2">
+                  100% Verifiable Academic Audit Ledger
+                  <span className="text-[10px] font-mono bg-emerald-500/20 text-[#00E676] px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    CRYPTOGRAPHIC AUDIT
+                  </span>
+                </div>
+                <div className="text-xs text-zinc-400 mt-0.5">
+                  Tamper-proof learning history, 30-day activity heatmap, and official printable NUC/NERDC transcript.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                sfx.tap();
+                setIsHistoryModalOpen(true);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-[#00E676] hover:bg-[#00c864] text-black font-extrabold text-xs transition-all shadow-[0_0_15px_rgba(0,230,118,0.3)] shrink-0 cursor-pointer flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
+            >
+              Inspect Audit History →
+            </button>
+          </div>
+
+          {/* 100 Autonomous Subagents Swarm Banner */}
+          <div className="glass-card rounded-3xl p-5 border border-purple-500/20 bg-gradient-to-r from-purple-950/30 via-zinc-900/60 to-black/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                <Bot className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-2">
+                  100 Autonomous Educational Subagents Swarm
+                  <span className="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">
+                    ADVANCE RESEARCH CITATIONS
+                  </span>
+                </div>
+                <div className="text-xs text-zinc-400 mt-0.5">
+                  10 battalions spanning STEM, slow learners, exam scoring, and security — addressing 100 verified platform gaps.
+                </div>
+              </div>
+            </div>
+            <Link
+              href="/subagents"
+              onClick={() => sfx.tap()}
+              className="px-4 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-black font-extrabold text-xs transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0 cursor-pointer flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
+            >
+              Explore 100 Subagents Swarm →
+            </Link>
+          </div>
+
+          {/* Interactive Cognitive Synapse Knowledge Web */}
+          <CognitiveSynapseGraph activeTier={classTier} />
+
+          {/* WORLD-FIRST EDTECH INNOVATION ENGINES */}
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                <h3 className="font-display font-black text-sm uppercase tracking-wider text-white flex items-center gap-2">
+                  World-First Cognitive EdTech Engines
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    2026 INVENTIONS
+                  </span>
+                </h3>
+              </div>
+              <span className="text-[11px] text-zinc-500 font-mono hidden sm:inline">
+                Zero-Exception Science Mapped
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {/* Feature 1: Protégé Effect AI Peer */}
+              <Link
+                href="/teach-ai"
+                onClick={() => sfx.tap()}
+                className="group p-4 rounded-3xl bg-gradient-to-br from-indigo-950/40 via-zinc-900/60 to-black border border-indigo-500/30 hover:border-indigo-400/60 transition-all cursor-pointer shadow-lg hover:scale-[1.01]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-9 h-9 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    🧠
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30">
+                    90% RETENTION
+                  </span>
+                </div>
+                <div className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                  Protégé Effect: Teach Temi
+                </div>
+                <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                  Teach an AI junior student via Socratic dialectic — proven 9x more effective than passive reading.
+                </p>
+                <div className="mt-3 flex items-center text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">
+                  Start Teaching Session →
+                </div>
+              </Link>
+
+              {/* Feature 2: Ghost Pacing Engine */}
+              <Link
+                href="/quiz"
+                onClick={() => sfx.tap()}
+                className="group p-4 rounded-3xl bg-gradient-to-br from-violet-950/40 via-zinc-900/60 to-black border border-violet-500/30 hover:border-violet-400/60 transition-all cursor-pointer shadow-lg hover:scale-[1.01]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-9 h-9 rounded-2xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    👻
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full border border-violet-500/30">
+                    TOP 1% PACER
+                  </span>
+                </div>
+                <div className="font-bold text-sm text-white group-hover:text-violet-300 transition-colors">
+                  Live CBT Ghost Pacing
+                </div>
+                <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                  Real-time translucent ghost of Nigeria&apos;s top-1% national scorers races alongside your live CBT.
+                </p>
+                <div className="mt-3 flex items-center text-xs font-bold text-violet-400 group-hover:translate-x-1 transition-transform">
+                  Enter Ghost CBT Arena →
+                </div>
+              </Link>
+
+              {/* Feature 3: Web Audio Oral Examiner */}
+              <Link
+                href="/oral-english"
+                onClick={() => sfx.tap()}
+                className="group p-4 rounded-3xl bg-gradient-to-br from-teal-950/40 via-zinc-900/60 to-black border border-teal-500/30 hover:border-teal-400/60 transition-all cursor-pointer shadow-lg hover:scale-[1.01]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-9 h-9 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    🎙️
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-full border border-teal-500/30">
+                    BROWSER FFT
+                  </span>
+                </div>
+                <div className="font-bold text-sm text-white group-hover:text-teal-300 transition-colors">
+                  Phoneme Spectrogram
+                </div>
+                <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                  In-browser Web Audio FFT formant analysis comparing pronunciation to British RP targets in real-time.
+                </p>
+                <div className="mt-3 flex items-center text-xs font-bold text-teal-400 group-hover:translate-x-1 transition-transform">
+                  Open Phonetics Lab →
+                </div>
+              </Link>
+
+              {/* Feature 4: Stress Inoculation Lab */}
+              <Link
+                href="/stress-lab"
+                onClick={() => sfx.tap()}
+                className="group p-4 rounded-3xl bg-gradient-to-br from-red-950/40 via-zinc-900/60 to-black border border-red-500/30 hover:border-red-400/60 transition-all cursor-pointer shadow-lg hover:scale-[1.01]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-9 h-9 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    ⚡
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full border border-red-500/30">
+                    STRESS INOCULATION
+                  </span>
+                </div>
+                <div className="font-bold text-sm text-white group-hover:text-red-300 transition-colors">
+                  Exam Stress Inoculation Lab
+                </div>
+                <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                  Simulated panic countdowns, ambient crowd noise, and power outages to build panic-proof exam nerves.
+                </p>
+                <div className="mt-3 flex items-center text-xs font-bold text-red-400 group-hover:translate-x-1 transition-transform">
+                  Start Pressure Sim →
+                </div>
+              </Link>
+
+              {/* Feature 5: Socratic Street Case Studies */}
+              <Link
+                href="/case-study"
+                onClick={() => sfx.tap()}
+                className="group p-4 rounded-3xl bg-gradient-to-br from-amber-950/40 via-zinc-900/60 to-black border border-amber-500/30 hover:border-amber-400/60 transition-all cursor-pointer shadow-lg hover:scale-[1.01]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    🏙️
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
+                    APPLIED NIGERIA
+                  </span>
+                </div>
+                <div className="font-bold text-sm text-white group-hover:text-amber-300 transition-colors">
+                  Socratic Street Cases
+                </div>
+                <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                  Solve 10 real-world high-stakes Nigerian scenarios applying curriculum physics, chemistry, biology &amp; math.
+                </p>
+                <div className="mt-3 flex items-center text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
+                  Enter Real Scenarios →
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          {/* EXTERNAL SERVICES & CALENDAR INTEGRATION */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* Service 1: Calendar Sync */}
+            <div 
+              onClick={() => {
+                sfx.tap();
+                setIsCalendarModalOpen(true);
+              }}
+              className="glass-card p-4 rounded-3xl border border-sky-500/30 bg-gradient-to-br from-sky-950/30 via-zinc-900/60 to-black/80 hover:border-sky-400/50 transition-all cursor-pointer shadow-lg group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-9 h-9 rounded-2xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-mono bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/30">
+                  ICAL &amp; GOOGLE
+                </span>
+              </div>
+              <div className="font-display font-black text-sm text-white group-hover:text-sky-300 transition-colors">
+                {isPrimary ? "Common Entrance Calendar" : "Sync Exam Calendars"}
+              </div>
+              <div className="text-[11px] text-zinc-400 mt-1">
+                {isPrimary ? "Export NCEE, Unity Colleges & Wonder Lab dates to Apple/Google iCal" : "Export 2026 JAMB, WAEC & Sunday Showdown to Google Calendar / Apple iCal (.ics)"}
+              </div>
+            </div>
+
+            {/* Service 2: Interactive Campus & CBT Map */}
+            <div 
+              onClick={() => {
+                sfx.tap();
+                setIsMapModalOpen(true);
+              }}
+              className="glass-card p-4 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/30 via-zinc-900/60 to-black/80 hover:border-emerald-400/50 transition-all cursor-pointer shadow-lg group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] group-hover:scale-110 transition-transform">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-mono bg-emerald-500/20 text-[#00E676] px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  {isPrimary ? "UNITY SCHOOLS" : "GPS & LOCATIONS"}
+                </span>
+              </div>
+              <div className="font-display font-black text-sm text-white group-hover:text-emerald-300 transition-colors">
+                {isPrimary ? "Top Unity Schools Guide" : "Campus & CBT Map Locator"}
+              </div>
+              <div className="text-[11px] text-zinc-400 mt-1">
+                {isPrimary ? "Explore King's College, Queen's College, Federal Unity Colleges & entry requirements" : "Interactive navigation for UNILAG, UI, OAU, ABU, UNN & accredited JAMB CBT centers"}
+              </div>
+            </div>
+          </div>
+
+          {/* DYNAMIC ACADEMIC TIER QUICK ACTION GRID */}
+          <section className="space-y-3">
+            <div className="flex justify-between items-center px-1">
+              <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-emerald-400" /> 
+                {isDevMode 
+                  ? "All Academic Modules (Developer Unrestricted Access)" 
+                  : classTier === "PRIMARY" 
+                  ? "Primary School Learning Hub (Basic 1-6)"
+                  : classTier === "JSS"
+                  ? "Junior Secondary Academy (Basic 7-9 & BECE)"
+                  : classTier === "SSS"
+                  ? "Senior Secondary Hub (SS1-SS3 & WAEC/NECO)"
+                  : classTier === "FRESHMAN"
+                  ? "University 100L Undergraduate Launchpad"
+                  : "JAMB UTME & WAEC Sovereign Command Center"}
+              </h2>
+              <span className="text-xs text-zinc-500 font-mono">
+                {isDevMode ? "DEV UNLOCKED" : `TIER: ${classTier}`}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
+              {/* PRIMARY TIER CARDS */}
+              {(isDevMode || classTier === "PRIMARY") && (
+                <>
+                  <Link href="/playground" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-amber-500/25 bg-gradient-to-br from-amber-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-amber-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">Ages 7-10</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-amber-300 transition-colors">Wonder Lab</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Circuits, Scale &amp; Stories</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/curriculum" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-blue-500/25 bg-gradient-to-br from-blue-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-blue-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">NERDC</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-blue-300 transition-colors">Primary Syllabus</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">English, Maths &amp; Science</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/quiz" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-emerald-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] group-hover:scale-110 transition-transform">
+                          <Zap className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">Audio Phonics</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-emerald-300 transition-colors">Basic Drills</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Spelling &amp; Mental Maths</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/zero-data" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-teal-500/25 bg-gradient-to-br from-teal-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-teal-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
+                          <Radio className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-teal-500/10 text-teal-400 px-2 py-0.5 rounded-full border border-teal-500/20">₦0 Data</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-teal-300 transition-colors">Offline Learning</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Zero Data Stories &amp; Games</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              )}
+
+              {/* JSS TIER CARDS */}
+              {(isDevMode || classTier === "JSS") && (
+                <>
+                  <Link href="/quiz" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-cyan-500/25 bg-gradient-to-br from-cyan-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-cyan-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/20">BECE / JSCE</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-cyan-300 transition-colors">Junior CBT Prep</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Basic 7-9 Past Questions</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/curriculum" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-blue-500/25 bg-gradient-to-br from-blue-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-blue-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">JSS 1-3</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-blue-300 transition-colors">NERDC JSS Syllabus</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Basic Tech, Sci &amp; Business</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/playground" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-amber-500/25 bg-gradient-to-br from-amber-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-amber-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">Simulations</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-amber-300 transition-colors">Science &amp; Tech Lab</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Interactive Experiments</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/leaderboard" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-purple-500/25 bg-gradient-to-br from-purple-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-purple-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                          <Trophy className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/20">Junior League</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-purple-300 transition-colors">Clan Battles</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Junior School Points</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              )}
+
+              {/* SSS TIER CARDS */}
+              {(isDevMode || classTier === "SSS") && (
+                <>
+                  <Link href="/quiz" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-cyan-500/25 bg-gradient-to-br from-cyan-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-cyan-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                          <FileCheck2 className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/20">AI Marking</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-cyan-300 transition-colors">WAEC &amp; NECO Theory</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Step-by-step marking</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/curriculum" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-blue-500/25 bg-gradient-to-br from-blue-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-blue-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">SS1 - SS3</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-blue-300 transition-colors">Senior NERDC Syllabus</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Sciences, Arts &amp; Comm</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/competition" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-purple-500/25 bg-gradient-to-br from-purple-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-purple-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                          <Zap className="w-5 h-5 fill-current" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">Live Arena</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-purple-300 transition-colors">Sunday Showdown</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">National SSCE League</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/zero-data" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-emerald-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] group-hover:scale-110 transition-transform">
+                          <Radio className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">0.00 KB</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-emerald-300 transition-colors">₦0 Data Mode</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Offline CBT &amp; USSD</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              )}
+
+              {/* UTME CANDIDATE TIER CARDS */}
+              {(isDevMode || classTier === "UTME") && (
+                <>
+                  <Link href="/quiz" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-emerald-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-[#00E676]/10 text-[#00E676] px-2 py-0.5 rounded-full border border-[#00E676]/20">2026 RAG</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-emerald-300 transition-colors">JAMB Practice</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">The Lekki Headmaster + FSRS</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/quiz" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-cyan-500/25 bg-gradient-to-br from-cyan-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-cyan-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                          <FileCheck2 className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/20">Theory Grader</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-cyan-300 transition-colors">WAEC &amp; NECO</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Step-by-step marking</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/competition" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-purple-500/25 bg-gradient-to-br from-purple-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-purple-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                          <Zap className="w-5 h-5 fill-current" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" /> Live
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-purple-300 transition-colors">JAMB Sprint</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Speed streak battle</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/leaderboard" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-amber-500/25 bg-gradient-to-br from-amber-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-amber-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                          <Trophy className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">Top 4%</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-amber-200 transition-colors">Rank #47</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">National Clan Wars</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/admissions" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-purple-500/25 bg-gradient-to-br from-purple-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-purple-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                          <FileCheck2 className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20">50:30:20</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-purple-300 transition-colors">Admissions Quota</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Merit / Catchment Radar</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/zero-data" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-emerald-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] group-hover:scale-110 transition-transform">
+                          <Radio className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">0.00 KB</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-emerald-300 transition-colors">₦0 Data Mode</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Offline CBT &amp; USSD</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              )}
+
+              {/* 100L FRESHMAN TIER CARDS */}
+              {(isDevMode || classTier === "FRESHMAN") && (
+                <>
+                  <Link href="/quiz" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-indigo-500/25 bg-gradient-to-br from-indigo-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-indigo-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                          <GraduationCap className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/20">NUC Core</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-indigo-300 transition-colors">GST 111 / 112 / 113</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">University Foundation CBT</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/curriculum" onClick={playClick}>
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-blue-500/25 bg-gradient-to-br from-blue-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-blue-500/40 transition-all cursor-pointer">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">100 Level</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-blue-300 transition-colors">Higher Ed Curriculum</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Faculty Course Outlines</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <div onClick={() => { sfx.tap(); setIsHistoryModalOpen(true); }} className="cursor-pointer">
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-emerald-500/40 transition-all">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[#00E676] group-hover:scale-110 transition-transform">
+                          <FileCheck2 className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-emerald-500/10 text-[#00E676] px-2 py-0.5 rounded-full border border-emerald-500/20">NUC Transcript</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-emerald-300 transition-colors">Audit Ledger</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Tamper-Proof Grades</div>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  <div onClick={() => { sfx.tap(); setIsMapModalOpen(true); }} className="cursor-pointer">
+                    <motion.div whileHover={{ scale: 1.025, y: -2 }} whileTap={{ scale: 0.975 }} className="p-4 rounded-3xl glass-card border border-sky-500/25 bg-gradient-to-br from-sky-950/40 via-zinc-900/60 to-black/80 h-36 flex flex-col justify-between relative overflow-hidden shadow-lg group hover:border-sky-500/40 transition-all">
+                      <div className="flex justify-between items-start">
+                        <div className="w-9 h-9 rounded-2xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform">
+                          <MapPin className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-extrabold bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/20">GPS Campus</span>
+                      </div>
+                      <div>
+                        <div className="font-display font-black text-sm text-white tracking-tight group-hover:text-sky-300 transition-colors">Campus Navigator</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Halls, Libraries &amp; CBT</div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* Weak Topics Diagnostic Radar */}
+          <section className="glass-card rounded-3xl p-5 border border-white/10 bg-black/40 space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="font-display font-bold text-xs uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-orange-400" /> 
+                {isPrimary ? "Primary Diagnostic Skill Radar" : isFreshman ? "Undergraduate Course Diagnostic" : "Weak Topics Diagnostic Radar"}
+              </h2>
+              <span className="text-xs text-zinc-400">Targeted Algorithmic Drills</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {isPrimary ? (
+                <>
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Mental Maths &amp; Fractions</div>
+                      <div className="text-[10px] text-zinc-400">Mathematics • Equivalent Fractions</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 mb-0.5">78% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+10% potential</div>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Phonics &amp; Word Blending</div>
+                      <div className="text-[10px] text-zinc-400">English • Silent Letters &amp; Digraphs</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 mb-0.5">82% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+8% potential</div>
+                    </div>
+                  </div>
+                </>
+              ) : isJss ? (
+                <>
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Energy Conversion &amp; Levers</div>
+                      <div className="text-[10px] text-zinc-400">Basic Tech • Simple Machines</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-orange-500/20 text-orange-400 mb-0.5">64% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+12% potential</div>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Linear Equations</div>
+                      <div className="text-[10px] text-zinc-400">Maths • Simultaneous Equations</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 mb-0.5">70% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+10% potential</div>
+                    </div>
+                  </div>
+                </>
+              ) : isFreshman ? (
+                <>
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Calculus &amp; Limits (MTH 101)</div>
+                      <div className="text-[10px] text-zinc-400">Mathematics • Continuity &amp; L&apos;Hopital</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 mb-0.5">74% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+0.2 GPA</div>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Algorithm Trees (CSC 101)</div>
+                      <div className="text-[10px] text-zinc-400">Computer Science • Big O Notation</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 mb-0.5">79% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+0.15 GPA</div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Organic Chemistry</div>
+                      <div className="text-[10px] text-zinc-400">Chemistry • Alkanes &amp; Alcohols</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500/20 text-red-400 mb-0.5">34% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+15 pts potential</div>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-3.5 rounded-2xl flex justify-between items-center border border-white/5 bg-white/5">
+                    <div>
+                      <div className="text-xs font-bold text-white">Wave Motion &amp; Optics</div>
+                      <div className="text-[10px] text-zinc-400">Physics • Refraction &amp; Lenses</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-orange-500/20 text-orange-400 mb-0.5">48% Mastery</span>
+                      <div className="text-[10px] text-zinc-400">+8 pts potential</div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* Big Neon Green Practice CTA */}
+          <Link href={isPrimary ? "/playground" : "/quiz"} onClick={playClick}>
+            <motion.button
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.985 }}
+              className="w-full bg-gradient-to-r from-[#00E676] via-emerald-400 to-[#008751] text-black font-display font-black py-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(0,230,118,0.4)] cursor-pointer hover:brightness-110 transition-all"
+            >
+              {isPrimary ? "🎨 Launch Wonder Lab & NCEE Drill" : "🚀 Launch Today's Adaptive Practice Drill"}
+            </motion.button>
+          </Link>
+        </div>
+
+        {/* ================= RIGHT RAIL WIDGETS (lg:col-span-4) ================= */}
+        <div className="lg:col-span-4 space-y-6">
+
+          {/* Hearts Bar & Streak Flame */}
+          <div className="glass-card p-5 rounded-3xl border border-white/10 bg-black/40 space-y-4">
+            <HeartBar current={10} max={20} />
+
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-500/20 via-red-500/20 to-pink-500/20 border border-orange-500/30 flex items-center justify-between shadow-lg shadow-orange-950/40">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-2xl">
+                  🔥
+                </div>
+                <div>
+                  <div className="text-lg font-display font-black text-white leading-none">7 Day Streak</div>
+                  <div className="text-[11px] text-orange-200/80 font-medium mt-0.5">Keep it burning! 1 Freeze active</div>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+                  <span key={idx} className="w-5 h-5 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-[9px] font-bold text-white">
+                    {day}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* SUNDAY 8PM SHOWDOWN ARENA */}
+          <Link href="/showdown" onClick={playClick}>
+            <motion.div 
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.985 }}
+              className="p-5 rounded-3xl glass-card border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-transparent relative overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.12)] cursor-pointer"
+            >
+              <div className="flex justify-between items-center mb-3">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/40 flex items-center gap-1.5 animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> SUNDAY 8:00 PM WAT
+                </span>
+                <span className="text-xs font-bold text-naija-gold flex items-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                  <Users className="w-3.5 h-3.5" /> 14,820 Live
+                </span>
+              </div>
+
+              <h3 className="font-display font-black text-lg text-white tracking-tight mb-1">
+                {isPrimary ? "Junior Stars Sunday Showdown" : isFreshman ? "Inter-Varsity STEM Hackathon" : "National Mock Battle Royale"}
+              </h3>
+              <p className="text-zinc-300 text-xs mb-3">
+                {isPrimary ? "Spelling Bee & Mental Maths • Top 10 win 500MB Data & Gold Trophy" : "Top 10 win 500MB Data + Verified Champion Badge"}
+              </p>
+
+              {/* Live Countdown Clock Widget */}
+              <div className="grid grid-cols-4 gap-2 mb-4 text-center">
+                {[
+                  { label: "DAYS", value: showdownCountdown.days },
+                  { label: "HOURS", value: String(showdownCountdown.hours).padStart(2, "0") },
+                  { label: "MINS", value: String(showdownCountdown.mins).padStart(2, "0") },
+                  { label: "SECS", value: String(showdownCountdown.secs).padStart(2, "0") }
+                ].map(box => (
+                  <div key={box.label} className="p-2 rounded-xl bg-black/50 border border-white/10">
+                    <div className="text-lg font-mono font-black text-naija-gold leading-none">{box.value}</div>
+                    <div className="text-[8px] font-bold text-zinc-400 tracking-widest mt-1">{box.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="w-full bg-gradient-to-r from-naija-gold to-amber-500 text-black font-display font-black text-xs py-2.5 rounded-xl text-center shadow-[0_0_20px_rgba(255,215,0,0.35)] flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+                {isPrimary ? "Enter Wonder Arena" : "Enter Live Arena"} <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+            </motion.div>
+          </Link>
+
+          {/* VERIFIED LIVE EDUCATIONAL PORTAL FEEDS (Live Sync) */}
+          <div className="glass-card rounded-3xl p-5 border border-emerald-500/30 bg-black/50 space-y-3">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <h3 className="font-bold text-xs text-white uppercase tracking-wider">
+                  {isPrimary ? "Primary & Basic Ed Feeds" : "Official Educational Feeds"}
+                </h3>
+              </div>
+              <button
+                onClick={handleRefreshFeeds}
+                disabled={isSyncingFeeds}
+                className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                title="Sync from JAMB, NERDC, UNILAG, WAEC"
+              >
+                <RefreshCw className={`w-3 h-3 ${isSyncingFeeds ? "animate-spin text-emerald-400" : ""}`} />
+                <span>{isSyncingFeeds ? "Syncing..." : "Sync"}</span>
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {portalFeeds.length > 0 ? (
+                portalFeeds.map((feed: any) => (
+                  <div key={feed.id} className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        {feed.source_name}
+                      </span>
+                      <a 
+                        href={feed.source_url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                    <div className="text-xs font-semibold text-white leading-tight">{feed.headline}</div>
+                    <p className="text-[11px] text-zinc-400 line-clamp-2">{feed.summary}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-zinc-500 text-center py-2">
+                  {isPrimary ? "Connected to NERDC & UBEC portals." : "Connected to JAMB, NERDC & UNILAG web portals."}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* SYNCHRONOUS EVENT CALENDAR WIDGET */}
+          <section className="glass-card rounded-3xl p-5 border border-white/10 bg-black/40 space-y-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                <Calendar className="w-3.5 h-3.5 text-cyan-400" /> 
+                {isPrimary ? "Upcoming Kids Live Sessions" : "Upcoming Live Mocks"}
+              </div>
+              <span className="text-[10px] font-mono text-zinc-400">WAT (UTC+1)</span>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
+                  <span className="font-semibold text-white">{isPrimary ? "Wed 4:00 PM" : "Wed 6:00 PM"}</span>
+                  <span className="text-zinc-400">• {isPrimary ? "Phonics Story Hour" : "Speed Drill"}</span>
+                </div>
+                <span className="text-[10px] font-bold text-purple-300">{isPrimary ? "+150 Stars" : "+250 XP"}</span>
+              </div>
+
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="font-semibold text-white">{isPrimary ? "Fri 5:00 PM" : "Fri 7:00 PM"}</span>
+                  <span className="text-zinc-400">• {isPrimary ? "Mental Maths Duel" : "Clan Wars"}</span>
+                </div>
+                <span className="text-[10px] font-bold text-amber-300">{isPrimary ? "1.5x Stars" : "1.25x"}</span>
+              </div>
+
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" />
+                  <span className="font-semibold text-white">{isPrimary ? "Sat 10:00 AM" : "Sun 8:00 PM"}</span>
+                  <span className="text-zinc-300">• {isPrimary ? "Common Entrance Drill" : "National Mock"}</span>
+                </div>
+                <span className="text-[10px] font-bold text-[#00E676]">500MB Data</span>
+              </div>
+            </div>
+          </section>
+
+          {/* HIGH-YIELD MONETIZATION POWERHOUSE BANNERS */}
+          <section className="space-y-3">
+            {/* Banner 1: Parent Guardian Angel Pass */}
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-950/50 via-zinc-900 to-black border border-emerald-500/30 space-y-2.5 shadow-xl">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-mono font-bold text-[#00E676] uppercase">👨‍👩‍👧 For Parents</span>
+                  <h3 className="font-bold text-xs text-white">Guardian Angel Weekly Report</h3>
+                </div>
+                <span className="font-mono text-[11px] font-black text-[#00E676] bg-emerald-500/10 px-2 py-0.5 rounded-xl border border-emerald-500/30">
+                  ₦3,500/mo
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-300 leading-relaxed">
+                Automated Friday 5:00 PM WhatsApp &amp; SMS diagnostic report card showing syllabus readiness.
+              </p>
+              <button
+                onClick={() => {
+                  sfx.tap();
+                  setIsParentModalOpen(true);
+                }}
+                className="w-full py-2 rounded-xl bg-[#00E676] text-black font-black text-xs hover:brightness-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(0,230,118,0.3)] cursor-pointer"
+              >
+                Activate Guardian Pass →
+              </button>
+            </div>
+
+            {/* Banner 2: Private School B2B CBT Lab License */}
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-blue-950/50 via-zinc-900 to-black border border-blue-500/30 space-y-2.5 shadow-xl">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-mono font-bold text-blue-400 uppercase">🏫 For Schools</span>
+                  <h3 className="font-bold text-xs text-white">School CBT Lab Termly License</h3>
+                </div>
+                <span className="font-mono text-[11px] font-black text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-xl border border-blue-500/30">
+                  ₦1,500/seat
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-300 leading-relaxed">
+                Turn your school computer laboratory into an offline CBT testing arena with local server sync.
+              </p>
+              <button
+                onClick={() => {
+                  sfx.tap();
+                  setIsSchoolModalOpen(true);
+                }}
+                className="w-full py-2 rounded-xl bg-blue-600 text-white font-black text-xs hover:bg-blue-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] cursor-pointer"
+              >
+                Onboard School (Bulk License) →
+              </button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+        onUserUpdated={(updated) => setUser(updated)}
+      />
+
+      {/* PARENT GUARDIAN ANGEL PASS MODAL */}
+      {isParentModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0c0d14] border border-emerald-500/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-[#00E676] uppercase">Parent Peace of Mind</span>
+                <h3 className="font-bold text-base text-white">Guardian Angel Weekly Report Pass</h3>
+              </div>
+              <button
+                onClick={() => { setIsParentModalOpen(false); setParentSuccessMsg(null); }}
+                className="text-zinc-400 hover:text-white text-xs font-mono cursor-pointer"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {parentSuccessMsg ? (
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 text-xs space-y-2">
+                <div className="font-bold text-sm text-[#00E676]">{parentSuccessMsg}</div>
+                <p>Every Friday at 5:00 PM, you will receive an automatic WhatsApp &amp; SMS breakdown of your child's syllabus progress and cut-off predictions.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribeParent} className="space-y-3">
+                <div>
+                  <label className="text-xs text-zinc-300 font-semibold block mb-1">Parent's Full Name:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Chief & Mrs. Adeleke"
+                    value={parentName}
+                    onChange={(e) => setParentName(e.target.value)}
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-zinc-300 font-semibold block mb-1">Parent's WhatsApp / SMS Phone:</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 08031234567"
+                    value={parentPhone}
+                    onChange={(e) => setParentPhone(e.target.value)}
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-zinc-300 font-semibold block mb-1">Subscription Plan:</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setParentPlan("guardian_monthly")}
+                      className={`p-2.5 rounded-xl border text-xs font-bold text-center cursor-pointer ${parentPlan === "guardian_monthly" ? "bg-[#00E676] text-black border-[#00E676]" : "bg-white/5 border-white/10 text-zinc-300"}`}
+                    >
+                      <div>Monthly Pass</div>
+                      <div className="text-[10px] font-mono">₦3,500 / mo</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParentPlan("guardian_annual")}
+                      className={`p-2.5 rounded-xl border text-xs font-bold text-center cursor-pointer ${parentPlan === "guardian_annual" ? "bg-[#00E676] text-black border-[#00E676]" : "bg-white/5 border-white/10 text-zinc-300"}`}
+                    >
+                      <div>Annual Pass (Best)</div>
+                      <div className="text-[10px] font-mono">₦25,000 / yr</div>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/5 text-[11px] text-zinc-400">
+                  🛡️ <strong>Statutory Guarantee:</strong> 0% VAT applies under First Schedule of Nigerian VAT Act. Direct Moniepoint/Providus virtual account transfer with ₦0 EMTL fees.
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-[#00E676] text-black font-black text-xs hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                >
+                  Confirm &amp; Activate Guardian Pass →
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* PRIVATE SCHOOL B2B TERM LICENSE MODAL */}
+      {isSchoolModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0c0d14] border border-blue-500/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-blue-400 uppercase">School CBT Lab License</span>
+                <h3 className="font-bold text-base text-white">B2B School Term Activation</h3>
+              </div>
+              <button
+                onClick={() => { setIsSchoolModalOpen(false); setSchoolSuccessMsg(null); }}
+                className="text-zinc-400 hover:text-white text-xs font-mono cursor-pointer"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {schoolSuccessMsg ? (
+              <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-200 text-xs space-y-2">
+                <div className="font-bold text-sm text-blue-300">{schoolSuccessMsg}</div>
+                <p>Your school computer lab can now run CBT exams 100% offline with zero internet data required!</p>
+              </div>
+            ) : (
+              <form onSubmit={handleActivateSchool} className="space-y-3">
+                <div>
+                  <label className="text-xs text-zinc-300 font-semibold block mb-1">School Name:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Corona Secondary School, Agbara"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-zinc-300 font-semibold block mb-1">Admin Email:</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="admin@school.edu.ng"
+                      value={schoolEmail}
+                      onChange={(e) => setSchoolEmail(e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-zinc-300 font-semibold block mb-1">Admin Phone:</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="08031112233"
+                      value={schoolPhone}
+                      onChange={(e) => setSchoolPhone(e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs text-zinc-300 font-semibold block mb-1">Licensed Student Seats:</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min="50"
+                      max="1000"
+                      step="50"
+                      value={schoolSeats}
+                      onChange={(e) => setSchoolSeats(Number(e.target.value))}
+                      className="flex-1 accent-blue-500 h-2 bg-zinc-800 rounded-lg cursor-pointer"
+                    />
+                    <span className="font-mono text-xs font-bold text-blue-400 w-20 text-right">{schoolSeats} seats</span>
+                  </div>
+                  <div className="text-[11px] text-zinc-400 font-mono mt-1">
+                    Term Fee: <strong className="text-white">₦{(schoolSeats * 1500).toLocaleString()}</strong> (₦1,500/student)
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs hover:brightness-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] cursor-pointer"
+                >
+                  Generate School Master License Key →
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Anti-Cheat Class Promotion Modal */}
+      <ClassPromotionModal
+        isOpen={isPromotionModalOpen}
+        onClose={() => setIsPromotionModalOpen(false)}
+        studentKey={user?.registration_key || "EDU-2025-LAG-1001"}
+        currentTier={classTier}
+        targetTier={targetPromotionTier}
+        onPromotionSuccess={(newTier) => {
+          setClassTier(newTier);
+          setIsPromotionModalOpen(false);
+        }}
+      />
+          {/* 100% Verifiable Learning Audit History & 30-Day Heatmap Modal */}
+      <VerifiableLearningHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        user={user}
+      />
+          {/* External Services Modals */}
+      <AddToCalendarModal
+        isOpen={isCalendarModalOpen}
+        onClose={() => setIsCalendarModalOpen(false)}
+      />
+      <InteractiveCampusMap
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+      />
+    </main>
+  );
+}

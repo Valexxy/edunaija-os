@@ -1,0 +1,85 @@
+{
+  "name": "Weekly Clan War Results",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * 0"
+            }
+          ]
+        }
+      },
+      "name": "Sunday 6PM WAT Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/clans/weekly-results",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Calculate Results & Awards",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "=@all_clan_members",
+        "text": "=🏆 Clan War Results are out!\\nWinning clans have received +5 hearts per member!\\nWeekly XP has been reset.",
+        "additionalFields": {}
+      },
+      "name": "Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Sunday 6PM WAT Trigger": {
+      "main": [
+        [
+          {
+            "node": "Calculate Results & Awards",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Results & Awards": {
+      "main": [
+        [
+          {
+            "node": "Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

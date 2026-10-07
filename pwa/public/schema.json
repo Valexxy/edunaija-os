@@ -1,0 +1,85 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://edunaija.org/#organization",
+      "name": "EduNaija OS",
+      "alternateName": [
+        "EduNaija",
+        "Nigeria Universal Education Operating System"
+      ],
+      "url": "https://edunaija.org",
+      "logo": {
+        "@type": "ImageObject",
+        "@id": "https://edunaija.org/#logo",
+        "url": "https://edunaija.org/icon-512x512.png",
+        "caption": "EduNaija OS Logo",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://edunaija.org/og-image.png",
+      "description": "Universal sovereign education operating system for Nigerian scholars.",
+      "knowsLanguage": [
+        "en",
+        "yo",
+        "ig",
+        "ha",
+        "pcm"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://edunaija.org/#website",
+      "url": "https://edunaija.org",
+      "name": "EduNaija OS",
+      "publisher": {
+        "@id": "https://edunaija.org/#organization"
+      }
+    },
+    {
+      "@type": "Course",
+      "@id": "https://edunaija.org/quiz#course",
+      "name": "JAMB UTME Complete CBT Mastery & Mock Simulator",
+      "description": "Comprehensive CBT simulation with 1985-2025 past questions, live scoring, and autopsy analytics.",
+      "provider": {
+        "@id": "https://edunaija.org/#organization"
+      },
+      "url": "https://edunaija.org/quiz",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "Course",
+      "@id": "https://edunaija.org/syllabus#course",
+      "name": "Universal School Syllabus & Socratic Task Solver",
+      "description": "Parent and student termly scheme upload decomposed into 12 weekly modules, micro-skills, and Feynman street analogies.",
+      "provider": {
+        "@id": "https://edunaija.org/#organization"
+      },
+      "url": "https://edunaija.org/syllabus",
+      "isAccessibleForFree": false
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://edunaija.org/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is EduNaija OS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "EduNaija OS is Nigeria’s sovereign education operating system unifying basic education, junior secondary, senior secondary, and tertiary entrance examinations."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is EduNaija OS free for Nigerian students?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. All statutory tools including unlimited CBT mock exams, 0-data offline vault, indigenous languages audio phonics, and cutoffs are 100% free (₦0)."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "Daily Heart Refill",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 23 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Midnight WAT Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 250]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE users SET hearts = 20 WHERE plan = 'free';"
+      },
+      "name": "Refill Hearts Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [400, 250]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.telegram_id}}",
+        "text": "Your daily hearts have been refilled! 💖 Time to practice!"
+      },
+      "name": "Telegram Push",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [600, 250]
+    }
+  ]
+}

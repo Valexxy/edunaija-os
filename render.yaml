@@ -1,0 +1,57 @@
+﻿services:
+  # Main FastAPI Backend
+  - type: web
+    name: jamb-ai-tutor-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ENVIRONMENT
+        value: production
+      - fromGroup: jamb-ai-tutor-secrets
+
+  # Telegram Bot (webhook mode in prod, polling in dev)
+  - type: worker
+    name: jamb-ai-tutor-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot/main.py
+    envVars:
+      - fromGroup: jamb-ai-tutor-secrets
+
+  # n8n Workflow Automation
+  - type: web
+    name: jamb-ai-tutor-n8n
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.n8n
+    envVars:
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_BASIC_AUTH_USER
+        value: admin
+      - fromGroup: jamb-ai-tutor-secrets
+
+envVarGroups:
+  - name: jamb-ai-tutor-secrets
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: AFRICAS_TALKING_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false

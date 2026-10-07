@@ -1,0 +1,30 @@
+pwa\app\admin\page.tsx:177: 100% top-down manual control over live pricing, proctoring security rules, student lifecycles, and multi-agent AI parameters without server restarts.
+pwa\app\admin\page.tsx:211: { id: 'multiagent', label: ' Multi-Agent AI Swarm' },
+pwa\app\admin\page.tsx:401: <span><strong>Zero AI Assistance:</strong> Socratic AI & Feynman hints shut down automatically in Exam Mode.</span>
+pwa\app\admin\page.tsx:416: {/* TAB 4: MULTI-AGENT AI SWARM */}
+pwa\app\api\og\route.tsx:9: const title = searchParams.get("title") || "EduNaija OS  Nigeria's AI Education Platform";
+pwa\app\autopsy\page.tsx:152: <p className="font-mono text-sm">Synthesizing AI Weakness Autopsy & Cutoff Predictor...</p>
+pwa\app\exam-proctor\page.tsx:380: AI Tutor: <strong className="text-rose-400">DISABLED</strong>
+pwa\app\exam-proctor\page.tsx:454: <h4 className="font-bold text-white text-sm">Zero AI Partiality</h4>
+pwa\app\oral-english\page.tsx:114: AI Oral English & <br />
+pwa\app\playground\page.tsx:43: // --- AI STORYBOOK STATE ---
+pwa\app\playground\page.tsx:114: // Generate AI Storybook
+pwa\app\playground\page.tsx:197: { id: "story", label: " AI Storybook", desc: "Bedtime Science" },
+pwa\app\playground\page.tsx:718: {/* ================= TAB 4: AI STORYBOOK ================= */}
+pwa\app\results\page.tsx:81: {/* AI JAMB Predictor Card */}
+pwa\app\results\page.tsx:90: <TrendingUp className="w-4 h-4 text-purple-400" /> AI JAMB PREDICTOR
+pwa\app\results\page.tsx:174:  Review Mistakes &amp; AI Explanations
+pwa\app\sponsors\page.tsx:48: { name: "Silver Pillar", count: 5, amount: 25000, icon: "", desc: "Sponsors 5 candidates with season pass & AI tutor" },
+pwa\app\sponsors\page.tsx:448: has generously endowed <strong className="text-white">{viewingCert.students_sponsored} Nigerian Secondary & UTME Candidates</strong> with full academic Season Passes, AI tutoring, and CBT mock exam diagnostic engines for the 2025/2026 Academic Season.
+pwa\app\student\page.tsx:346: Theory AI
+pwa\app\syllabus\page.tsx:269: The AI parser decomposes it into 8-pillar learning units automatically.
+pwa\app\syllabus\page.tsx:547:  Take Strict Proctored Exam (No AI)
+pwa\app\tutor\page.tsx:61: {/* Left Column: Cohorts & AI Grading */}
+pwa\app\tutor\page.tsx:84: {/* WAEC Theory AI Grading Queue */}
+pwa\app\tutor\page.tsx:92: <div className="text-[10px] text-zinc-400">18 AI partial-graded answers awaiting approval</div>
+pwa\app\tutor\page.tsx:96: onClick={() => { sfx.tap(); alert("Opening WAEC Theory AI Grader Queue"); }}
+pwa\components\NavBar.tsx:99: AI Education Operating System
+pwa\components\RegistrationModal.tsx:230: { id: "student", title: "Student / JAMB Candidate", desc: "CBT simulator, Socratic AI Pidgin hints, Clan Wars & Showdown", icon: GraduationCap, color: "text-[#00E676] border-emerald-500/30" },
+pwa\components\RegistrationModal.tsx:232: { id: "tutor", title: "Tutor / Educator", desc: "Cohort mastery heatmap & WAEC theory AI partial-mark grader", icon: Users, color: "text-amber-400 border-amber-500/30" },
+pwa\components\RoleAccessGate.tsx:32: desc: "Grants access to cohort mastery heatmaps, at-risk intervention alerts, and the WAEC theory AI step-by-step marking scheme queue.",
+pwa\components\VoucherRedemptionModal.tsx:178: Vouchers grant free unlimited practice, mock examinations, and AI explainers sponsored by your local representative or alumni association.

@@ -1,0 +1,51 @@
+{
+  "universities": [
+    {
+      "code": "UNILAG",
+      "name": "University of Lagos",
+      "state": "Lagos",
+      "type": "Federal",
+      "postutme_format": "Online CBT",
+      "courses": [
+        {"name": "Medicine & Surgery", "jamb_cutoff": 280, "subjects": ["ENG", "BIO", "CHEM", "PHY"]},
+        {"name": "Law", "jamb_cutoff": 260, "subjects": ["ENG", "LIT", "GOV", "CRS"]},
+        {"name": "Computer Science", "jamb_cutoff": 250, "subjects": ["ENG", "MAT", "PHY", "CHEM"]}
+      ]
+    },
+    {
+      "code": "OAU",
+      "name": "Obafemi Awolowo University",
+      "state": "Osun",
+      "type": "Federal",
+      "postutme_format": "Physical CBT",
+      "courses": [
+        {"name": "Medicine & Surgery", "jamb_cutoff": 275, "subjects": ["ENG", "BIO", "CHEM", "PHY"]},
+        {"name": "Law", "jamb_cutoff": 255, "subjects": ["ENG", "LIT", "GOV", "CRS"]},
+        {"name": "Mechanical Engineering", "jamb_cutoff": 240, "subjects": ["ENG", "MAT", "PHY", "CHEM"]}
+      ]
+    },
+    {
+      "code": "UI",
+      "name": "University of Ibadan",
+      "state": "Oyo",
+      "type": "Federal",
+      "postutme_format": "Physical CBT",
+      "courses": [
+        {"name": "Medicine & Surgery", "jamb_cutoff": 290, "subjects": ["ENG", "BIO", "CHEM", "PHY"]},
+        {"name": "Law", "jamb_cutoff": 265, "subjects": ["ENG", "LIT", "GOV", "CRS"]},
+        {"name": "Pharmacy", "jamb_cutoff": 270, "subjects": ["ENG", "BIO", "CHEM", "PHY"]}
+      ]
+    },
+    {
+      "code": "UNN",
+      "name": "University of Nigeria, Nsukka",
+      "state": "Enugu",
+      "type": "Federal",
+      "postutme_format": "Physical CBT",
+      "courses": [
+        {"name": "Medicine & Surgery", "jamb_cutoff": 280, "subjects": ["ENG", "BIO", "CHEM", "PHY"]},
+        {"name": "Law", "jamb_cutoff": 250, "subjects": ["ENG", "LIT", "GOV", "CRS"]}
+      ]
+    }
+  ]
+}

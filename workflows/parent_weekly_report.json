@@ -1,0 +1,53 @@
+{
+  "name": "Parent Weekly JAMB Report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 20 * * 0"
+            }
+          ]
+        }
+      },
+      "name": "Sunday 8PM Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "table": "parent_subscriptions",
+        "filters": {
+          "status": "active"
+        }
+      },
+      "name": "Get Parents",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "\n// Logic to iterate parents and fetch student stats\nreturn items;"
+      },
+      "name": "Generate Report Message",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "to": "={{$json.parent_phone}}",
+        "message": "Hello Mrs. {{$json.parent_name}}! 👋\n\n📊 {{$json.student_name}}'s JAMB Update (Week {{$json.week_num}}):\n✅ Questions answered: {{$json.questions_answered}}\n📈 Accuracy: {{$json.accuracy}}%\n⚠️ Needs work: {{$json.weak_topics}}\n🎯 Predicted score: {{$json.predicted_score}}/400\n\n[View Full Report]"
+      },
+      "name": "Africas Talking SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ]
+}

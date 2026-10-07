@@ -1,0 +1,25 @@
+{
+  "@context": "https://schema.org/",
+  "@type": "Course",
+  "name": "JAMB/WAEC Chemistry Curriculum Graph",
+  "version": "1.0.0",
+  "publisher": "EduNaija OS",
+  "license": "MIT",
+  "nodes": [
+    {"id": "chem_001", "topic": "Atomic Structure", "level": 1, "requires": []},
+    {"id": "chem_002", "topic": "Periodic Table", "level": 2, "requires": ["chem_001"]},
+    {"id": "chem_003", "topic": "Chemical Bonding", "level": 2, "requires": ["chem_001"]},
+    {"id": "chem_004", "topic": "Stoichiometry", "level": 2, "requires": []},
+    {"id": "chem_005", "topic": "Acids, Bases, and Salts", "level": 3, "requires": ["chem_003", "chem_004"]},
+    {"id": "chem_006", "topic": "Electrochemistry", "level": 4, "requires": ["chem_005"]},
+    {"id": "chem_007", "topic": "Organic Chemistry", "level": 3, "requires": ["chem_003"]}
+  ],
+  "edges": [
+    {"source": "chem_001", "target": "chem_002"},
+    {"source": "chem_001", "target": "chem_003"},
+    {"source": "chem_003", "target": "chem_005"},
+    {"source": "chem_004", "target": "chem_005"},
+    {"source": "chem_005", "target": "chem_006"},
+    {"source": "chem_003", "target": "chem_007"}
+  ]
+}
