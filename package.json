@@ -1,0 +1,9 @@
+﻿{
+  "name": "edunaija-os",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd pwa && npm install && npm run build",
+    "start": "cd pwa && npm start"
+  }
+}
