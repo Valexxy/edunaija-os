@@ -107,23 +107,58 @@ export default function StudentDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Default offline/client fallback tools
-  const DEFAULT_ESSENTIAL_TOOLS = [
-    { id: "tool-cbt", title: "CBT Exam Engine", description: "Standard timed UTME/WAEC simulation with instant scoring", icon: "⚡", route: "/quiz", badge: "Live Practice", is_featured: true },
-    { id: "tool-autopsy", title: "Question Autopsy", description: "Deep forensic post-mortem on questions and tricky traps", icon: "🔬", route: "/autopsy", badge: "AI Analysis", is_featured: true },
-    { id: "tool-leaderboard", title: "Class Leaderboard", description: "Track your rank across 15 grades, states, and LGAs", icon: "🏆", route: "/leaderboard", badge: "Rankings", is_featured: true },
-    { id: "tool-zero-data", title: "₦0 Data Vault", description: "Download study questions and read offline without internet", icon: "📶", route: "/zero-data", badge: "Offline", is_featured: true },
-    { id: "tool-oral-eng", title: "Oral English Lab", description: "Pronunciation, stress patterns, and consonant clusters", icon: "🎙️", route: "/oral-english", badge: "Acoustic AI", is_featured: false },
-    { id: "tool-syllabus", title: "Syllabus Tracker", description: "Official NERDC & JAMB curriculum breakdown by topic", icon: "📋", route: "/syllabus", badge: "Curriculum", is_featured: false },
-    { id: "tool-literature", title: "Literature Theater", description: "Interactive audio narration of prescribed exam novels", icon: "📖", route: "/reader", badge: "Audiobooks", is_featured: false },
-    { id: "tool-competition", title: "Sunday Showdown", description: "Live nationwide academic arena with ₦250k prize pool", icon: "⚔️", route: "/competition", badge: "Arena", is_featured: false },
-  ];
+  // Class-specific Fallback Tools (Primary, JSS, SSS, UTME, 100L)
+  const getClassSpecificTools = (tier: string) => {
+    const norm = (tier || "UTME").toUpperCase();
+    if (norm === "PRIMARY") {
+      return [
+        { id: "tool-pri-1", title: "Phonics & Pronunciation", description: "Audio alphabet drills, blending, and picture phonics with Auntie Bola", icon: "🅰️", route: "/oral-english", badge: "Primary Phonics", is_featured: true },
+        { id: "tool-pri-2", title: "Mental Math & Times Table", description: "Step-by-step counting with real-world market examples", icon: "🔢", route: "/quiz?subject=Mathematics&mode=quick", badge: "Numbers Lab", is_featured: true },
+        { id: "tool-pri-3", title: "Wonder Stars Standings", description: "Child-safe non-punitive praise and animal mascot achievements", icon: "🌟", route: "/leaderboard", badge: "Class Stars", is_featured: true },
+        { id: "tool-pri-4", title: "₦0 Data Learning Vault", description: "Illustrated stories and lessons saved completely offline", icon: "📶", route: "/zero-data", badge: "100% Free", is_featured: true },
+        { id: "tool-pri-5", title: "Common Entrance Practice", description: "National Common Entrance Examination (NCEE) drills", icon: "🎒", route: "/quiz", badge: "NCEE Prep", is_featured: false },
+        { id: "tool-pri-6", title: "Children's Folk Tales", description: "Classic African fables with Ijapa the Tortoise narration", icon: "🐢", route: "/reader", badge: "Stories", is_featured: false },
+      ];
+    }
+    if (norm === "JSS") {
+      return [
+        { id: "tool-jss-1", title: "BECE Junior Mock Arena", description: "Standard timed Basic Education Certificate drills (NECO & State BECE)", icon: "📘", route: "/quiz", badge: "BECE Exam", is_featured: true },
+        { id: "tool-jss-2", title: "Basic Science & Technology", description: "Interactive diagrams, computer studies, and introductory tech", icon: "🔬", route: "/curriculum", badge: "STEM Core", is_featured: true },
+        { id: "tool-jss-3", title: "Oral English Speech Lab", description: "Vowels, consonants, stress patterns, and spoken grammar", icon: "🎙️", route: "/oral-english", badge: "NERDC Standards", is_featured: true },
+        { id: "tool-jss-4", title: "₦0 Data Offline Vault", description: "Download entire term scheme of work and past papers without data", icon: "📶", route: "/zero-data", badge: "Zero Data", is_featured: true },
+        { id: "tool-jss-5", title: "Junior Class Leaderboard", description: "Compare your weekly progress with JSS 1-3 scholars nationwide", icon: "🏆", route: "/leaderboard", badge: "JSS League", is_featured: false },
+        { id: "tool-jss-6", title: "Junior Literature Reader", description: "Prescribed Nigerian prose, poetry, and drama with audio guide", icon: "📖", route: "/reader", badge: "BECE Literature", is_featured: false },
+      ];
+    }
+    if (norm === "100L" || norm === "FRESHMAN") {
+      return [
+        { id: "tool-uni-1", title: "NUC CCMAS Course Packs", description: "Official 100L university curriculum: GST 111, MTH 101, PHY 101, COS 101", icon: "🎓", route: "/curriculum", badge: "NUC CCMAS", is_featured: true },
+        { id: "tool-uni-2", title: "5.0 CGPA Simulator", description: "Simulate test scores, credit load, and target first-class standing", icon: "📊", route: "/student", badge: "Dean's List", is_featured: true },
+        { id: "tool-uni-3", title: "University Freshmen Arena", description: "Practice university semester continuous assessments & past exams", icon: "⚡", route: "/quiz", badge: "Faculty CBT", is_featured: true },
+        { id: "tool-uni-4", title: "₦0 Data Lecture Vault", description: "Download university course notes, slides, and syllabus offline", icon: "📶", route: "/zero-data", badge: "No Internet", is_featured: true },
+        { id: "tool-uni-5", title: "Inter-Varsity Leaderboard", description: "Compete with freshmen across UNILAG, UI, OAU, UNN, ABU, and Covenant", icon: "🏆", route: "/leaderboard", badge: "Campus League", is_featured: false },
+        { id: "tool-uni-6", title: "GST Compulsory Modules", description: "Master GST 111, GST 112 (Nigerian Peoples), GST 113, GST 115", icon: "📚", route: "/curriculum", badge: "Compulsory GST", is_featured: false },
+      ];
+    }
+    // SSS & UTME
+    return [
+      { id: "tool-cbt", title: "CBT Exam Engine", description: "Standard timed UTME/WAEC simulation with instant scoring", icon: "⚡", route: "/quiz", badge: "Live Practice", is_featured: true },
+      { id: "tool-autopsy", title: "Question Autopsy", description: "Deep forensic post-mortem on questions and tricky traps", icon: "🔬", route: "/autopsy", badge: "AI Analysis", is_featured: true },
+      { id: "tool-leaderboard", title: "Class Leaderboard", description: "Track your rank across 15 grades, states, and LGAs", icon: "🏆", route: "/leaderboard", badge: "Rankings", is_featured: true },
+      { id: "tool-zero-data", title: "₦0 Data Vault", description: "Download study questions and read offline without internet", icon: "📶", route: "/zero-data", badge: "Offline", is_featured: true },
+      { id: "tool-oral-eng", title: "Oral English Lab", description: "Pronunciation, stress patterns, and consonant clusters", icon: "🎙️", route: "/oral-english", badge: "Acoustic AI", is_featured: false },
+      { id: "tool-syllabus", title: "Syllabus Tracker", description: "Official NERDC & JAMB curriculum breakdown by topic", icon: "📋", route: "/syllabus", badge: "Curriculum", is_featured: false },
+      { id: "tool-literature", title: "Literature Theater", description: "Interactive audio narration of prescribed exam novels", icon: "📖", route: "/reader", badge: "Audiobooks", is_featured: false },
+      { id: "tool-competition", title: "Sunday Showdown", description: "Live nationwide academic arena with ₦250k prize pool", icon: "⚔️", route: "/competition", badge: "Arena", is_featured: false },
+    ];
+  };
 
   // Fetch cohort-isolated Essential Study Tools from database pipeline with client fallback
   useEffect(() => {
     let isMounted = true;
     const fetchTools = async () => {
       setToolsLoading(true);
+      const classDefaults = getClassSpecificTools(classTier);
       try {
         const tierParam = encodeURIComponent(classTier || "100L");
         const res = await fetch(`/api/backend/tools/essential?tier=${tierParam}`);
@@ -140,11 +175,11 @@ export default function StudentDashboard() {
           }
         }
       } catch (err) {
-        console.warn("Using offline essential tools fallback:", err);
+        console.warn("Using offline class-specific essential tools fallback:", err);
       } finally {
         if (isMounted) {
-          setEssentialTools(prev => prev.length > 0 ? prev : DEFAULT_ESSENTIAL_TOOLS.filter(t => t.is_featured));
-          setExtendedTools(prev => prev.length > 0 ? prev : DEFAULT_ESSENTIAL_TOOLS.filter(t => !t.is_featured));
+          setEssentialTools(classDefaults.filter(t => t.is_featured));
+          setExtendedTools(classDefaults.filter(t => !t.is_featured));
           setToolsLoading(false);
         }
       }
@@ -717,12 +752,7 @@ export default function StudentDashboard() {
         defaultPersona={isPrimary ? "PRIMARY" : "JAMB"}
       />
 
-      {/* Steganographic forensic watermark during senior CBT preparation */}
-      {!isPrimary && (
-        <ForensicCanvasWatermark
-          userKey={user?.registration_key || "SCHOLAR-DEMO"}
-        />
-      )}
+      {/* Active Modals */}
 
     </main>
   );

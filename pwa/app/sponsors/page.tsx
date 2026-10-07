@@ -22,11 +22,54 @@ interface Sponsor {
   created_at: string;
 }
 
+  const INITIAL_SPONSORS: Sponsor[] = [
+    {
+      id: "sp-1",
+      sponsor_name: "Engr. Femi Adeyemi (London, UK)",
+      tier: "Platinum Luminary",
+      amount_ngn: 500000,
+      students_sponsored: 50,
+      state_focus: "Oyo & Osun",
+      certificate_id: "CERT-EDUNAIJA-2025-FE92",
+      created_at: "2025-01-14"
+    },
+    {
+      id: "sp-2",
+      sponsor_name: "Dr. Ngozi Eze (Houston, TX)",
+      tier: "Silver Pillar",
+      amount_ngn: 100000,
+      students_sponsored: 10,
+      state_focus: "Enugu & Anambra",
+      certificate_id: "CERT-EDUNAIJA-2025-NG88",
+      created_at: "2025-01-18"
+    },
+    {
+      id: "sp-3",
+      sponsor_name: "Alhaji Ibrahim Danfulani (Abuja)",
+      tier: "National Trustee",
+      amount_ngn: 1250000,
+      students_sponsored: 125,
+      state_focus: "Kano & Kaduna",
+      certificate_id: "CERT-EDUNAIJA-2025-IB31",
+      created_at: "2025-02-01"
+    },
+    {
+      id: "sp-4",
+      sponsor_name: "Barrister Funke Williams (Lagos)",
+      tier: "Gold Patron",
+      amount_ngn: 200000,
+      students_sponsored: 20,
+      state_focus: "Lagos Island & Epe",
+      certificate_id: "CERT-EDUNAIJA-2025-FW44",
+      created_at: "2025-02-10"
+    }
+  ];
+
 export default function SponsorsPage() {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [totalStudents, setTotalStudents] = useState(185);
-  const [totalPledged, setTotalPledged] = useState(1850000);
-  const [loading, setLoading] = useState(true);
+  const [sponsors, setSponsors] = useState<Sponsor[]>(INITIAL_SPONSORS);
+  const [totalStudents, setTotalStudents] = useState(205);
+  const [totalPledged, setTotalPledged] = useState(2050000);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"wall" | "ledger">("ledger");
   const [ledgerData, setLedgerData] = useState<any>(null);
 
