@@ -288,7 +288,7 @@ export default function SmartConciergeWidget() {
 
   return (
     <>
-      {/* Floating Trigger Button */}
+      {/* Floating Trigger Button - Stacked above Mobile Navigation Dock */}
       {!isOpen && (
         <button
           onClick={() => {
@@ -296,7 +296,7 @@ export default function SmartConciergeWidget() {
             triggerTmaHaptic("medium");
             setIsOpen(true);
           }}
-          className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-[#00E676] text-slate-950 font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer border border-emerald-400/40 select-none"
+          className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 right-3 sm:right-6 z-40 flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-[#00E676] text-slate-950 font-bold shadow-[0_4px_25px_rgba(0,0,0,0.7)] hover:scale-105 active:scale-95 transition-all cursor-pointer border border-emerald-400/40 select-none touch-manipulation min-h-[44px]"
           title="Open Sister Amaka AI Customer Care"
         >
           <div className="relative">
@@ -315,7 +315,7 @@ export default function SmartConciergeWidget() {
 
       {/* Main Drawer */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-full max-w-[390px] h-[580px] rounded-3xl bg-[#090C16] border border-emerald-500/40 shadow-2xl flex flex-col overflow-hidden text-white backdrop-blur-xl animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 w-auto sm:w-[390px] h-[540px] sm:h-[580px] max-h-[88vh] rounded-3xl bg-[#090C16] border border-emerald-500/40 shadow-2xl flex flex-col overflow-hidden text-white backdrop-blur-xl animate-in slide-in-from-bottom-5 duration-200">
           
           {/* Header */}
           <div className="p-3.5 bg-gradient-to-r from-emerald-950 via-slate-900 to-[#0B0F19] border-b border-emerald-500/30 flex items-center justify-between">

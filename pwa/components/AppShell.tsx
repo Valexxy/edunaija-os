@@ -181,15 +181,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isQuizMode = pathname === "/quiz" || pathname === "/exam-proctor";
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white flex flex-col font-sans">
+    <div className="min-h-[100dvh] bg-[#050508] text-white flex flex-col font-sans">
       
       {/* 1. SINGLE CLEAN 56px HEADER (Distraction-Free - Hidden in Exam Cockpit) */}
       {!isQuizMode && (
-        <header className="sticky top-0 z-40 bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 lg:px-8 py-2.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-40 bg-[#050508]/95 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 lg:px-8 py-2 pt-[max(0.625rem,env(safe-area-inset-top))]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Left: Brand Logo & 2-Persona Toggle */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             {pathname !== "/" && pathname !== "/student" && pathname !== "/parent" && (
               <BackButton
                 fallbackHref={activePersona === "parent" || pathname.startsWith("/parent") ? "/parent" : "/student"}
@@ -201,39 +201,39 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               href="/" 
               title="EduNaija OS Homepage"
               aria-label="EduNaija OS - Return to Homepage"
-              className="flex items-center gap-2 group shrink-0"
+              className="flex items-center gap-1.5 sm:gap-2 group shrink-0"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#008751] to-[#00E676] flex items-center justify-center font-black text-black text-sm shadow-[0_0_15px_rgba(0,230,118,0.4)]">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-[#008751] to-[#00E676] flex items-center justify-center font-black text-black text-xs sm:text-sm shadow-[0_0_15px_rgba(0,230,118,0.4)]">
                 🇳🇬
               </div>
-              <span className="font-display font-black text-base tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+              <span className="font-display font-black text-sm sm:text-base tracking-tight text-white group-hover:text-emerald-400 transition-colors hidden xs:inline">
                 EduNaija <span className="text-[#00E676]">OS</span>
               </span>
             </Link>
 
             {/* Strict 2-Role Switcher: Student vs Parent */}
-            <div className="flex items-center bg-black/60 p-0.5 rounded-xl border border-white/10 text-xs font-bold">
+            <div className="flex items-center bg-black/60 p-0.5 rounded-xl border border-white/10 text-xs font-bold shrink-0">
               <button
                 onClick={() => handlePersonaSwitch("student")}
-                className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer min-h-[32px] ${
                   activePersona === "student"
                     ? "bg-gradient-to-r from-emerald-500 to-[#00E676] text-black font-black shadow-sm"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <GraduationCap className="w-3.5 h-3.5" />
-                <span>Student</span>
+                <span className="text-[11px] sm:text-xs">Student</span>
               </button>
               <button
                 onClick={() => handlePersonaSwitch("parent")}
-                className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer min-h-[32px] ${
                   activePersona === "parent"
                     ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-black shadow-sm"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Parent</span>
+                <span className="text-[11px] sm:text-xs">Parent</span>
               </button>
             </div>
           </div>
@@ -548,85 +548,104 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </footer>
       )}
 
-      {/* 4. MOBILE BOTTOM DOCK (Clean 4-Pillar Mobile Bar) */}
+      {/* 4. MOBILE BOTTOM DOCK (Touch-optimized 44px+ hit targets & safe area insets) */}
       {!isQuizMode && (
-        <nav className="md:hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[94%] max-w-md bg-black/90 backdrop-blur-2xl border border-white/15 rounded-3xl px-4 py-2 flex justify-between items-center text-xs z-50 shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
+        <nav 
+          aria-label="Mobile Navigation"
+          className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[95%] max-w-md bg-[#090C16]/95 backdrop-blur-2xl border border-white/15 rounded-3xl px-2 py-1.5 flex justify-around items-center text-xs z-50 shadow-[0_12px_40px_rgba(0,0,0,0.85)] pb-[max(0.375rem,env(safe-area-inset-bottom))]"
+        >
           {activePersona === "student" ? (
             <>
               <Link
                 href="/student"
-                className={`flex flex-col items-center gap-1 px-2.5 py-1 ${
-                  pathname === "/student" ? "text-[#00E676] font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-2 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/student" 
+                    ? "text-[#00E676] font-extrabold bg-emerald-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <BookOpen className="w-4 h-4" />
-                <span className="text-[10px]">Home</span>
+                <BookOpen className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px] leading-tight">Hub</span>
               </Link>
               <Link
                 href="/quiz"
-                className={`flex flex-col items-center gap-1 px-2.5 py-1 ${
-                  pathname === "/quiz" ? "text-[#00E676] font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-2 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/quiz" 
+                    ? "text-[#00E676] font-extrabold bg-emerald-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <Zap className="w-4 h-4" />
-                <span className="text-[10px]">Practice</span>
+                <Zap className="w-5 h-5 mb-0.5 text-amber-400" />
+                <span className="text-[10px] leading-tight">Practice</span>
               </Link>
               <Link
                 href="/qa"
-                className={`flex flex-col items-center gap-1 px-2.5 py-1 ${
-                  pathname === "/qa" ? "text-[#00E676] font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-2 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/qa" 
+                    ? "text-[#00E676] font-extrabold bg-emerald-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <Sparkles className="w-4 h-4" />
-                <span className="text-[10px]">Ask AI</span>
+                <Sparkles className="w-5 h-5 mb-0.5 text-purple-400" />
+                <span className="text-[10px] leading-tight">AI Tutor</span>
               </Link>
               <Link
                 href="/virtual-teaching"
-                className={`flex flex-col items-center gap-1 px-2 py-1 ${
-                  pathname === "/virtual-teaching" ? "text-[#00E676] font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-2 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/virtual-teaching" 
+                    ? "text-[#00E676] font-extrabold bg-emerald-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <Video className="w-4 h-4" />
-                <span className="text-[10px]">Mentors</span>
+                <Video className="w-5 h-5 mb-0.5 text-cyan-400" />
+                <span className="text-[10px] leading-tight">Mentors</span>
               </Link>
               <Link
                 href="/syllabus"
-                className={`flex flex-col items-center gap-1 px-2 py-1 ${
-                  pathname === "/syllabus" ? "text-[#00E676] font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-2 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/syllabus" 
+                    ? "text-[#00E676] font-extrabold bg-emerald-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <BookOpen className="w-4 h-4" />
-                <span className="text-[10px]">Tasks</span>
+                <BookOpen className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px] leading-tight">Syllabus</span>
               </Link>
             </>
           ) : (
             <>
               <Link
                 href="/parent"
-                className={`flex flex-col items-center gap-1 px-2.5 py-1 ${
-                  pathname === "/parent" ? "text-purple-400 font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[64px] min-h-[48px] px-3 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/parent" 
+                    ? "text-purple-400 font-extrabold bg-purple-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span className="text-[10px]">Overview</span>
+                <ShieldCheck className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px] leading-tight">Overview</span>
               </Link>
               <Link
                 href="/parent-autopilot"
-                className={`flex flex-col items-center gap-1 px-2.5 py-1 ${
-                  pathname === "/parent-autopilot" ? "text-purple-400 font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[64px] min-h-[48px] px-3 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/parent-autopilot" 
+                    ? "text-purple-400 font-extrabold bg-purple-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <Zap className="w-4 h-4" />
-                <span className="text-[10px]">Radar</span>
+                <Zap className="w-5 h-5 mb-0.5 text-amber-400" />
+                <span className="text-[10px] leading-tight">Radar</span>
               </Link>
               <Link
                 href="/schools"
-                className={`flex flex-col items-center gap-1 px-2.5 py-1 ${
-                  pathname === "/schools" ? "text-purple-400 font-bold" : "text-zinc-400"
+                className={`flex flex-col items-center justify-center min-w-[64px] min-h-[48px] px-3 py-1 rounded-2xl transition-all active:scale-95 touch-manipulation ${
+                  pathname === "/schools" 
+                    ? "text-purple-400 font-extrabold bg-purple-500/15" 
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <School className="w-4 h-4" />
-                <span className="text-[10px]">Admissions</span>
+                <School className="w-5 h-5 mb-0.5 text-indigo-400" />
+                <span className="text-[10px] leading-tight">Admissions</span>
               </Link>
             </>
           )}

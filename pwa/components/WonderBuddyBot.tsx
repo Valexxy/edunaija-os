@@ -82,17 +82,17 @@ export default function WonderBuddyBot() {
   return (
     <>
       {/* Floating Buddy Mascot Button - Stacks cleanly above Sister Amaka trigger */}
-      <div className="fixed bottom-36 md:bottom-24 right-4 sm:right-6 z-40">
+      <div className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] md:bottom-24 right-3 sm:right-6 z-40">
         <button
           onClick={() => {
             sfx.tap();
             setIsOpen(true);
           }}
-          className="h-13 w-13 sm:h-14 sm:w-14 bg-gradient-to-tr from-amber-400 to-amber-300 rounded-full border-3 border-white shadow-2xl flex items-center justify-center transform hover:scale-110 active:scale-95 transition-all cursor-pointer ring-2 ring-amber-500/30"
+          className="h-12 w-12 sm:h-14 sm:w-14 bg-gradient-to-tr from-amber-400 to-amber-300 rounded-full border-2 sm:border-3 border-white shadow-2xl flex items-center justify-center transform hover:scale-110 active:scale-95 transition-all cursor-pointer ring-2 ring-amber-500/30 touch-manipulation"
           aria-label="Open Ijapa Wonder Buddy Helper Bot"
           title="Need help? Tap Ijapa Wonder Buddy!"
         >
-          <span className="text-2xl sm:text-3xl filter drop-shadow animate-bounce">🐢</span>
+          <span className="text-xl sm:text-3xl filter drop-shadow animate-bounce">🐢</span>
         </button>
       </div>
 

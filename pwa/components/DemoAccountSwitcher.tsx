@@ -249,15 +249,15 @@ export default function DemoAccountSwitcher() {
 
   return (
     <>
-      {/* Floating Action Trigger Button - positioned bottom-left to avoid colliding with Command Palette */}
-      <div className="fixed bottom-20 left-4 z-40 sm:bottom-6 sm:left-6">
+      {/* Floating Action Trigger Button - positioned bottom-left to avoid colliding with Mobile Dock & Command Palette */}
+      <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-40 sm:bottom-6 sm:left-6">
         <button
           onClick={() => {
             sfx.tap();
             triggerTmaHaptic("light");
             setIsOpen(true);
           }}
-          className="px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:brightness-110 text-white font-extrabold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,230,118,0.4)] border border-white/20 transition-all cursor-pointer backdrop-blur-md active:scale-95 group"
+          className="min-h-[44px] px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:brightness-110 text-white font-extrabold text-xs flex items-center gap-1.5 sm:gap-2 shadow-[0_4px_25px_rgba(0,0,0,0.7)] border border-white/20 transition-all cursor-pointer backdrop-blur-md active:scale-95 group touch-manipulation"
           title="Switch Demo Accounts (Primary, JSS, SSS, UTME, 100L, Parent, Tutor, School, Admin)"
         >
           <Sparkles className="w-4 h-4 text-[#00E676] animate-spin" />
