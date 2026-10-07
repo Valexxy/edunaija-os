@@ -59,6 +59,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root_health_check():
+    return {
+        "status": "online",
+        "service": "EduNaija OS Enterprise Backend",
+        "version": "2.0.0",
+        "message": "FastAPI is running and ready for traffic."
+    }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "edunaija-backend"}
+
 @app.get("/api/security/tier-info")
 async def get_security_tier_info():
     return {
