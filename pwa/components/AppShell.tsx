@@ -8,7 +8,7 @@ import {
   User, Check, Sparkles, KeyRound, LogOut,
   ShieldCheck, Bell, ChevronDown, BookOpen, Layers,
   GraduationCap, Users, School, QrCode, Video,
-  Sliders, HelpCircle, Shield, Globe
+  Sliders, HelpCircle, Shield, Globe, Menu, X
 } from "lucide-react";
 import RegistrationModal from "./RegistrationModal";
 import UserProfileModal from "./UserProfileModal";
@@ -57,6 +57,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [guideDefaultPersona, setGuideDefaultPersona] = useState<GuidePersona>("PRIMARY");
   const [isParentPinGateOpen, setIsParentPinGateOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Close more menu on click outside
@@ -542,9 +543,171 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 Sign In
               </button>
             )}
+
+            {/* Mobile All-Sections Hamburger Trigger */}
+            <button
+              onClick={() => {
+                sfx.tap();
+                setIsNavDrawerOpen(true);
+              }}
+              className="md:hidden w-8 h-8 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-zinc-300 hover:text-white cursor-pointer transition-all active:scale-95"
+              title="Open Complete Menu & All Portals"
+              aria-label="Open Navigation Menu"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </header>
+      )}
+
+      {/* FULL-SCREEN MOBILE DIRECTORY DRAWER (All Sections Available on Phone) */}
+      {isNavDrawerOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col p-4 overflow-y-auto animate-in fade-in duration-150">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-[#00E676] flex items-center justify-center font-bold text-xs">
+                🇳🇬
+              </div>
+              <span className="font-display font-black text-sm text-white">All EduNaija Portals</span>
+            </div>
+            <button
+              onClick={() => {
+                sfx.tap();
+                setIsNavDrawerOpen(false);
+              }}
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-zinc-300 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="py-4 space-y-4 text-xs">
+            {/* Core Pillars */}
+            <div className="space-y-1">
+              <div className="text-[10px] font-mono uppercase text-emerald-400 font-extrabold px-1">Core Learning Hub</div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/student"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <BookOpen className="w-4 h-4 text-emerald-400" />
+                  <span>Student Hub</span>
+                </Link>
+                <Link
+                  href="/quiz"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span>CBT Practice</span>
+                </Link>
+                <Link
+                  href="/qa"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <span>Ask AI Tutor</span>
+                </Link>
+                <Link
+                  href="/virtual-teaching"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <Video className="w-4 h-4 text-cyan-400" />
+                  <span>Live Mentors</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Academic Standings & Arena */}
+            <div className="space-y-1">
+              <div className="text-[10px] font-mono uppercase text-amber-400 font-extrabold px-1">Competition &amp; Rankings</div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/leaderboard"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 font-bold text-amber-300"
+                >
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span>Leaderboards</span>
+                </Link>
+                <Link
+                  href="/competition"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-2 font-bold text-red-300"
+                >
+                  <span>⚔️ Showdowns</span>
+                </Link>
+                <Link
+                  href="/autopsy"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <span>🔬 Autopsy Lab</span>
+                </Link>
+                <Link
+                  href="/reader"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <span>📖 Lit Theater</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Curriculum & Specialized Tools */}
+            <div className="space-y-1">
+              <div className="text-[10px] font-mono uppercase text-cyan-400 font-extrabold px-1">Curriculum &amp; Tools</div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/syllabus"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <span>📋 Syllabus</span>
+                </Link>
+                <Link
+                  href="/zero-data"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 font-bold text-emerald-300"
+                >
+                  <span>📶 ₦0 Data Vault</span>
+                </Link>
+                <Link
+                  href="/oral-english"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <span>🎙️ Oral English</span>
+                </Link>
+                <Link
+                  href="/curriculum"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <span>📚 Schemes</span>
+                </Link>
+                <Link
+                  href="/schools"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 font-bold text-white"
+                >
+                  <span>🏛️ Admissions</span>
+                </Link>
+                <Link
+                  href="/parent"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center gap-2 font-bold text-purple-300"
+                >
+                  <span>🛡️ Parent Portal</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 2. MAIN CONTENT VIEWPORT */}

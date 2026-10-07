@@ -107,7 +107,19 @@ export default function StudentDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch cohort-isolated Essential Study Tools from database pipeline
+  // Default offline/client fallback tools
+  const DEFAULT_ESSENTIAL_TOOLS = [
+    { id: "tool-cbt", title: "CBT Exam Engine", description: "Standard timed UTME/WAEC simulation with instant scoring", icon: "⚡", route: "/quiz", badge: "Live Practice", is_featured: true },
+    { id: "tool-autopsy", title: "Question Autopsy", description: "Deep forensic post-mortem on questions and tricky traps", icon: "🔬", route: "/autopsy", badge: "AI Analysis", is_featured: true },
+    { id: "tool-leaderboard", title: "Class Leaderboard", description: "Track your rank across 15 grades, states, and LGAs", icon: "🏆", route: "/leaderboard", badge: "Rankings", is_featured: true },
+    { id: "tool-zero-data", title: "₦0 Data Vault", description: "Download study questions and read offline without internet", icon: "📶", route: "/zero-data", badge: "Offline", is_featured: true },
+    { id: "tool-oral-eng", title: "Oral English Lab", description: "Pronunciation, stress patterns, and consonant clusters", icon: "🎙️", route: "/oral-english", badge: "Acoustic AI", is_featured: false },
+    { id: "tool-syllabus", title: "Syllabus Tracker", description: "Official NERDC & JAMB curriculum breakdown by topic", icon: "📋", route: "/syllabus", badge: "Curriculum", is_featured: false },
+    { id: "tool-literature", title: "Literature Theater", description: "Interactive audio narration of prescribed exam novels", icon: "📖", route: "/reader", badge: "Audiobooks", is_featured: false },
+    { id: "tool-competition", title: "Sunday Showdown", description: "Live nationwide academic arena with ₦250k prize pool", icon: "⚔️", route: "/competition", badge: "Arena", is_featured: false },
+  ];
+
+  // Fetch cohort-isolated Essential Study Tools from database pipeline with client fallback
   useEffect(() => {
     let isMounted = true;
     const fetchTools = async () => {
@@ -118,14 +130,23 @@ export default function StudentDashboard() {
         if (res.ok) {
           const data = await res.json();
           if (isMounted) {
-            setEssentialTools(data.featured_tools || []);
-            setExtendedTools(data.extended_tools || []);
+            const featured = data.featured_tools || [];
+            const extended = data.extended_tools || [];
+            if (featured.length > 0) {
+              setEssentialTools(featured);
+              setExtendedTools(extended);
+              return;
+            }
           }
         }
       } catch (err) {
-        console.error("Failed to load essential tools from database pipeline:", err);
+        console.warn("Using offline essential tools fallback:", err);
       } finally {
-        if (isMounted) setToolsLoading(false);
+        if (isMounted) {
+          setEssentialTools(prev => prev.length > 0 ? prev : DEFAULT_ESSENTIAL_TOOLS.filter(t => t.is_featured));
+          setExtendedTools(prev => prev.length > 0 ? prev : DEFAULT_ESSENTIAL_TOOLS.filter(t => !t.is_featured));
+          setToolsLoading(false);
+        }
       }
     };
     fetchTools();
