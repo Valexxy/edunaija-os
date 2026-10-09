@@ -41,8 +41,10 @@ interface BloomQuestion {
   formula_latex?: string;
 }
 
+import AIPedagogyStudio from '../../components/AIPedagogyStudio';
+
 export default function SyllabusPage() {
-  const [activeTab, setActiveTab] = useState<'catalog' | 'upload' | 'modules' | 'solver'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'upload' | 'modules' | 'solver' | 'ai_studio'>('catalog');
   const [catalog, setCatalog] = useState<Syllabus[]>([]);
   const [selectedSyllabusId, setSelectedSyllabusId] = useState<string>('syl-nerdc-math-sss2');
   const [modules, setModules] = useState<Module[]>([]);
@@ -239,6 +241,13 @@ Week 6: Mid-Term Review and Problem-Solving Drills`
           >
             📝 Socratic Homework Task Solver
             <span className="text-[10px] px-1.5 py-0.2 bg-purple-950 text-purple-300 rounded font-mono border border-purple-500/40">PREMIUM</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('ai_studio')}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 shrink-0 ${activeTab === 'ai_studio' ? 'bg-teal-400 text-slate-950 shadow-lg shadow-teal-400/20' : 'bg-slate-900 text-slate-400 hover:text-slate-200'}`}
+          >
+            🧠 AI Pedagogy &amp; Assignment Studio
+            <span className="text-[10px] px-1.5 py-0.2 bg-teal-950 text-teal-300 rounded font-mono border border-teal-500/40">SOVEREIGN AI</span>
           </button>
         </div>
 
@@ -813,6 +822,13 @@ Week 6: Mid-Term Review and Problem-Solving Drills`
                 </Link>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 5: AI PEDAGOGY & ASSIGNMENT STUDIO */}
+        {activeTab === 'ai_studio' && (
+          <div className="w-full">
+            <AIPedagogyStudio />
           </div>
         )}
 

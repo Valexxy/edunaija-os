@@ -79,7 +79,8 @@ def init_db():
         ("guardian_relationship", "TEXT"),
         ("ndpa_consent_verified", "INTEGER DEFAULT 0"),
         ("ndpa_consent_timestamp", "TEXT"),
-        ("academic_track", "TEXT")
+        ("academic_track", "TEXT"),
+        ("trust_level", "INTEGER DEFAULT 1")
     ]
     for col_name, col_def in user_cols:
         try:
@@ -1395,6 +1396,23 @@ def _normalize_user_dict(user_row) -> Optional[Dict[str, Any]]:
         d["class_tier"] = "100L"
     elif "grade_level" not in d or not d["grade_level"]:
         d["grade_level"] = d["class_tier"]
+
+    # Authoritative Trust Level (0 to 5) as defined in Sovereign Master Blueprint
+    trust = d.get("trust_level")
+    if trust is None or trust == "":
+        if d.get("role") == "admin":
+            trust = 5
+        elif d.get("trcn_verified") or d.get("role") == "tutor":
+            trust = 4
+        elif d.get("parent_pin_hash") or meta.get("parent_pin_set"):
+            trust = 3
+        elif d.get("guardian_name") and d.get("guardian_phone") and d.get("ndpa_consent_verified"):
+            trust = 2
+        elif d.get("phone"):
+            trust = 1
+        else:
+            trust = 0
+    d["trust_level"] = int(trust)
 
     return d
 

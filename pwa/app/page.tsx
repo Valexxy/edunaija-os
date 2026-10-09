@@ -12,6 +12,9 @@ import {
 import AIVisitorIntentEngine from "../components/AIVisitorIntentEngine";
 import BentoModuleCard from "../components/BentoModuleCard";
 import GithubHeroGlobe from "../components/GithubHeroGlobe";
+import GoogleOneTapAuth from "../components/GoogleOneTapAuth";
+import CognitiveTeaserHero from "../components/CognitiveTeaserHero";
+import EnterpriseScholarCockpit from "../components/EnterpriseScholarCockpit";
 
 type PersonaFocus = "student" | "parent" | "tutor" | "school";
 
@@ -111,6 +114,7 @@ const STATS = [
 export default function LandingPage() {
   const [user, setUser] = useState<any>(null);
   const [news, setNews] = useState<any[]>([]);
+  const [isCockpitOpen, setIsCockpitOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -158,6 +162,14 @@ export default function LandingPage() {
 
         {/* 3. Interactive AI Visitor Intent Engine */}
         <AIVisitorIntentEngine />
+
+        {/* 4. High-Converting Cognitive Teaser Hero (The Public Surface Hook) */}
+        <CognitiveTeaserHero onUnlockCockpit={() => setIsCockpitOpen(true)} />
+
+        {/* 5. Gated Enterprise Scholar Cockpit Modal */}
+        {isCockpitOpen && (
+          <EnterpriseScholarCockpit onExit={() => setIsCockpitOpen(false)} />
+        )}
       </section>
 
       {/* 3. Modern Bento Grid Feature Showcase */}

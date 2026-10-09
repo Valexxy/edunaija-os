@@ -27,6 +27,8 @@ import InteractiveGuideModal, { GuidePersona } from "./InteractiveGuideModal";
 import SecurityTierBadge from "./SecurityTierBadge";
 import ParentPinGateModal from "./ParentPinGateModal";
 import WonderBuddyBot from "./WonderBuddyBot";
+import EnterpriseScholarCockpit from "./EnterpriseScholarCockpit";
+import DiagnosticAssessmentModal from "./DiagnosticAssessmentModal";
 import { sfx } from "../lib/audio";
 import { triggerTmaHaptic } from "../lib/telegram";
 
@@ -36,6 +38,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  const [isCockpitOpen, setIsCockpitOpen] = useState(false);
+  const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isZeroFeeModalOpen, setIsZeroFeeModalOpen] = useState(false);
@@ -136,12 +140,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         setIsAuthModalOpen(true);
       };
 
+      const handleOpenCockpit = () => {
+        setIsCockpitOpen(true);
+      };
+
+      const handleOpenDiagnostic = () => {
+        setIsDiagnosticOpen(true);
+      };
+
       window.addEventListener("edunaija_user_updated", handleUserUpdated);
       window.addEventListener("edunaija_open_auth", handleOpenAuth);
+      window.addEventListener("edunaija_open_cockpit", handleOpenCockpit);
+      window.addEventListener("edunaija_open_diagnostic", handleOpenDiagnostic);
 
       return () => {
         window.removeEventListener("edunaija_user_updated", handleUserUpdated);
         window.removeEventListener("edunaija_open_auth", handleOpenAuth);
+        window.removeEventListener("edunaija_open_cockpit", handleOpenCockpit);
+        window.removeEventListener("edunaija_open_diagnostic", handleOpenDiagnostic);
       };
     }
   }, []);
@@ -358,7 +374,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Right: Streamlined Header Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            
+            {/* Enterprise Scholar Cockpit Trigger */}
+            <button
+              onClick={() => {
+                sfx.tap();
+                window.dispatchEvent(new CustomEvent("edunaija_open_cockpit"));
+              }}
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border border-emerald-500/40 text-[11px] font-black text-emerald-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Launch Enterprise Scholar Cockpit (Axiom Bouts, Sovereign Aegis, AI Pedagogy Studio)"
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-400 fill-current" />
+              <span className="hidden sm:inline">Scholar Cockpit</span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-400 text-slate-950 font-black uppercase">Demo</span>
+            </button>
+
             {/* Quick Command Center Trigger (⌘K) */}
             <button
               onClick={() => {
@@ -512,6 +541,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* User Profile / Auth Button */}
             {user ? (
               <div className="flex items-center gap-1.5">
+                <SecurityTierBadge
+                  currentTier={user.trust_level ?? (user.ndpa_consent_verified ? 2 : 1)}
+                  userRole={user.role}
+                  onClick={() => setIsParentPinGateOpen(true)}
+                />
                 <button
                   onClick={() => setIsProfileModalOpen(true)}
                   className="px-2.5 py-1 rounded-xl bg-zinc-900/90 border border-emerald-500/40 flex items-center gap-2 text-xs text-white hover:border-emerald-400 transition-all cursor-pointer shadow-sm group"
@@ -907,7 +941,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onSuccess={() => {}}
       />
 
+      <DiagnosticAssessmentModal
+        isOpen={isDiagnosticOpen}
+        onClose={() => setIsDiagnosticOpen(false)}
+        userKey={user?.registration_key || user?.phone || "EDU-2025-LAG-1001"}
+      />
+
       {academicTier === "PRIMARY" && !isQuizMode && <WonderBuddyBot />}
+
+      {isCockpitOpen && (
+        <EnterpriseScholarCockpit onExit={() => setIsCockpitOpen(false)} />
+      )}
 
       <CommandPalette />
       

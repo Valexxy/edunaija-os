@@ -11,8 +11,9 @@ import confetti from "canvas-confetti";
 import BackButton from "../../components/BackButton";
 import ExamCalculator, { isCalculatorPermitted } from "../../components/ExamCalculator";
 import StudySquadCard from "../../components/StudySquadCard";
-import LiveDuelArena from "../../components/LiveDuelArena";
 import ExamInstructionsModal from "../../components/ExamInstructionsModal";
+import AxiomBoutArena from "../../components/AxiomBoutArena";
+import SovereignAegisTournament from "../../components/SovereignAegisTournament";
 import { sfx } from "../../lib/audio";
 import { triggerTmaHaptic } from "../../lib/telegram";
 
@@ -60,7 +61,7 @@ export default function CompetitionPage() {
   const [regionFilter, setRegionFilter] = useState<"ALL" | "NIGERIA" | "DIASPORA">("ALL");
   const [ntpOffsetMs, setNtpOffsetMs] = useState<number>(0);
 
-  const [activeTab, setActiveTab] = useState<"SOLO_SPRINT" | "SQUAD_COOP" | "LIVE_DUEL" | "LGA_WARS">("SOLO_SPRINT");
+  const [activeTab, setActiveTab] = useState<"SOLO_SPRINT" | "AXIOM_BOUTS" | "SOVEREIGN_AEGIS" | "SQUAD_COOP" | "LIVE_DUEL" | "LGA_WARS">("SOLO_SPRINT");
   const [lgaRivalries, setLgaRivalries] = useState<any[]>([]);
 
   // Live Head-to-Head Lagos vs Onitsha Simulation State
@@ -515,8 +516,8 @@ export default function CompetitionPage() {
           tier={specificGrade}
         />
 
-        {/* 4-Tab Architecture: Solo Sprint, Co-op Squads, Live Duel, LGA Wars */}
-        <div className="mb-4 grid grid-cols-4 gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/10 text-xs font-bold">
+        {/* 5-Tab Architecture: Solo Sprint, Axiom Bouts 1v1, Sovereign Aegis, Co-op Squads, LGA Wars */}
+        <div className="mb-4 grid grid-cols-5 gap-1 p-1 bg-black/60 rounded-2xl border border-white/10 text-xs font-bold">
           <button
             onClick={() => { sfx.tap(); setActiveTab("SOLO_SPRINT"); }}
             className={`py-2 px-1 rounded-xl text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
@@ -530,39 +531,51 @@ export default function CompetitionPage() {
           </button>
 
           <button
-            onClick={() => { sfx.tap(); setActiveTab("SQUAD_COOP"); }}
+            onClick={() => { sfx.tap(); setActiveTab("AXIOM_BOUTS"); }}
             className={`py-2 px-1 rounded-xl text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
-              activeTab === "SQUAD_COOP"
-                ? "bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20"
+              activeTab === "AXIOM_BOUTS"
+                ? "bg-emerald-400 text-slate-950 font-black shadow-md shadow-emerald-400/20"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
-            <Users className="w-3.5 h-3.5" />
-            <span className="text-[10px]">Co-Op Squad</span>
+            <Zap className="w-3.5 h-3.5 fill-current text-amber-300" />
+            <span className="text-[10px]">Axiom Bouts</span>
           </button>
 
           <button
-            onClick={() => { sfx.tap(); setActiveTab("LIVE_DUEL"); }}
+            onClick={() => { sfx.tap(); setActiveTab("SOVEREIGN_AEGIS"); }}
             className={`py-2 px-1 rounded-xl text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
-              activeTab === "LIVE_DUEL"
+              activeTab === "SOVEREIGN_AEGIS"
+                ? "bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/20"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5 fill-current text-slate-950" />
+            <span className="text-[10px]">The Aegis</span>
+          </button>
+
+          <button
+            onClick={() => { sfx.tap(); setActiveTab("SQUAD_COOP"); }}
+            className={`py-2 px-1 rounded-xl text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
+              activeTab === "SQUAD_COOP"
                 ? "bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
-            <Swords className="w-3.5 h-3.5" />
-            <span className="text-[10px]">1v1 Duel</span>
+            <Users className="w-3.5 h-3.5" />
+            <span className="text-[10px]">Co-Op</span>
           </button>
 
           <button
             onClick={() => { sfx.tap(); setActiveTab("LGA_WARS"); }}
             className={`py-2 px-1 rounded-xl text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
               activeTab === "LGA_WARS"
-                ? "bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/20"
+                ? "bg-rose-500 text-slate-950 font-black shadow-md shadow-rose-500/20"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
             <Trophy className="w-3.5 h-3.5" />
-            <span className="text-[10px]">774 LGA Wars</span>
+            <span className="text-[10px]">LGA Wars</span>
           </button>
         </div>
 
@@ -822,19 +835,23 @@ export default function CompetitionPage() {
         </div>
         )}
 
-        {/* TAB 2: CO-OP STUDY SQUADS & BLOOD PACT */}
-        {activeTab === "SQUAD_COOP" && (
-          <StudySquadCard grade={specificGrade} />
+        {/* TAB 2: AXIOM BOUTS 1v1 PEER DUELS */}
+        {activeTab === "AXIOM_BOUTS" && (
+          <div className="w-full">
+            <AxiomBoutArena />
+          </div>
         )}
 
-        {/* TAB 3: 1v1 LIVE DUEL MATCHMAKING */}
-        {activeTab === "LIVE_DUEL" && (
-          <LiveDuelArena
-            grade={specificGrade}
-            userName={currentUser?.full_name || "Chisom (You)"}
-            userState={currentUser?.state || "Anambra"}
-            userLga={currentUser?.lga || "Ogbaru"}
-          />
+        {/* TAB 3: THE SOVEREIGN AEGIS NATIONAL CHAMPIONSHIP */}
+        {activeTab === "SOVEREIGN_AEGIS" && (
+          <div className="w-full">
+            <SovereignAegisTournament />
+          </div>
+        )}
+
+        {/* TAB 4: CO-OP STUDY SQUADS & BLOOD PACT */}
+        {activeTab === "SQUAD_COOP" && (
+          <StudySquadCard grade={specificGrade} />
         )}
 
         {/* TAB 4: 774 LGA CLAN WARS & RIVALRIES */}

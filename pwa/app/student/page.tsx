@@ -142,12 +142,14 @@ export default function StudentDashboard() {
     }
     // SSS & UTME
     return [
-      { id: "tool-cbt", title: "CBT Exam Engine", description: "Standard timed UTME/WAEC simulation with instant scoring", icon: "⚡", route: "/quiz", badge: "Live Practice", is_featured: true },
+      { id: "tool-axiom", title: "Axiom Bouts™ 1v1", description: "Real-time 1v1 peer challenges with 4-digit PIN matchmaking", icon: "⚡", route: "/competition", badge: "1v1 Duels", is_featured: true },
+      { id: "tool-aegis", title: "The Sovereign Aegis™", description: "National championship tournament with tab lockdown proctoring", icon: "🏆", route: "/competition", badge: "National Cup", is_featured: true },
+      { id: "tool-cbt", title: "CBT Exam Engine", description: "Standard timed UTME/WAEC simulation with instant scoring", icon: "💻", route: "/quiz", badge: "Live Practice", is_featured: true },
       { id: "tool-autopsy", title: "Question Autopsy", description: "Deep forensic post-mortem on questions and tricky traps", icon: "🔬", route: "/autopsy", badge: "AI Analysis", is_featured: true },
-      { id: "tool-leaderboard", title: "Class Leaderboard", description: "Track your rank across 15 grades, states, and LGAs", icon: "🏆", route: "/leaderboard", badge: "Rankings", is_featured: true },
+      { id: "tool-leaderboard", title: "Class Leaderboard", description: "Track your rank across 15 grades, states, and LGAs", icon: "🏅", route: "/leaderboard", badge: "Rankings", is_featured: true },
       { id: "tool-zero-data", title: "₦0 Data Vault", description: "Download study questions and read offline without internet", icon: "📶", route: "/zero-data", badge: "Offline", is_featured: true },
       { id: "tool-oral-eng", title: "Oral English Lab", description: "Pronunciation, stress patterns, and consonant clusters", icon: "🎙️", route: "/oral-english", badge: "Acoustic AI", is_featured: false },
-      { id: "tool-syllabus", title: "Syllabus Tracker", description: "Official NERDC & JAMB curriculum breakdown by topic", icon: "📋", route: "/syllabus", badge: "Curriculum", is_featured: false },
+      { id: "tool-syllabus", title: "Syllabus & AI Studio", description: "Official NERDC breakdown and Socratic assignment solver", icon: "📋", route: "/syllabus", badge: "Curriculum", is_featured: false },
       { id: "tool-literature", title: "Literature Theater", description: "Interactive audio narration of prescribed exam novels", icon: "📖", route: "/reader", badge: "Audiobooks", is_featured: false },
       { id: "tool-competition", title: "Sunday Showdown", description: "Live nationwide academic arena with ₦250k prize pool", icon: "⚔️", route: "/competition", badge: "Arena", is_featured: false },
     ];
@@ -405,6 +407,19 @@ export default function StudentDashboard() {
                 <div className="text-[9px] text-zinc-400 uppercase font-mono">Hearts</div>
               </div>
             </div>
+
+            <button
+              onClick={() => {
+                sfx.tap();
+                window.dispatchEvent(new CustomEvent("edunaija_open_diagnostic"));
+              }}
+              className="px-3.5 py-2.5 rounded-2xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Calibrate Baseline Diagnostic Across English, Maths, Physics, Chemistry"
+            >
+              <Target className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden sm:inline">Diagnostic</span>
+              <span>Calibration</span>
+            </button>
 
             <Link
               href="/quiz"

@@ -142,6 +142,15 @@ app.include_router(sponsor_ledger.router)
 app.include_router(essential_tools.router)
 app.include_router(virtual_teaching.router)
 
+from backend.routers import axiom_bouts
+app.include_router(axiom_bouts.router)
+
+from backend.routers import ai_pedagogy
+app.include_router(ai_pedagogy.router)
+
+from backend.routers import diagnostic
+app.include_router(diagnostic.router)
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "environment": settings.ENVIRONMENT}
