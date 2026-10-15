@@ -443,7 +443,7 @@ export default function GuardianPortalPage() {
       </section>
 
       {/* Ward Deep Intelligence & At-Home Coaching Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 24, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 24, marginBottom: 28 }}>
         {/* Card 1: 3-Question Instant Reassurance Digest */}
         <div
           className="glass-card"
@@ -633,7 +633,7 @@ export default function GuardianPortalPage() {
           </span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 20, alignItems: "center" }}>
           {/* Daily Study Minutes Slider */}
           <div>
             <label style={{ display: "block", fontSize: "0.86rem", fontWeight: 700, color: "var(--ink)", marginBottom: 8 }}>
@@ -751,7 +751,7 @@ export default function GuardianPortalPage() {
             </p>
           </div>
 
-          <Link href="/tutoring" className="btn btn-primary btn-sm">
+          <Link href="/tutors" className="btn btn-primary btn-sm">
             Browse All TRCN Mentors →
           </Link>
         </div>
@@ -815,7 +815,7 @@ export default function GuardianPortalPage() {
               >
                 💳 Paystack Escrow Retainer (₦15,000 / Mo)
               </button>
-              <Link href="/tutoring" className="btn btn-outline btn-sm">
+              <Link href="/tutors" className="btn btn-outline btn-sm">
                 📅 Schedule Next Session
               </Link>
             </div>
@@ -825,7 +825,7 @@ export default function GuardianPortalPage() {
             <p style={{ margin: "0 0 10px", color: "var(--muted)", fontSize: "0.9rem" }}>
               No private mentor currently assigned for {currentChild.name}.
             </p>
-            <Link href="/tutoring" className="btn btn-primary btn-sm">
+            <Link href="/tutors" className="btn btn-primary btn-sm">
               Discover Verified {currentChild.classLabel} Tutors →
             </Link>
           </div>

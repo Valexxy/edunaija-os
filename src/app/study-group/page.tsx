@@ -175,7 +175,7 @@ export default function StudyGroupPage() {
       </div>
 
       {!isInRoom ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 24 }}>
           <div className="card" style={{ padding: 28 }}>
             <h2 style={{ fontSize: "1.3rem", marginTop: 0 }}>Join or Start a Study Circle</h2>
             <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
@@ -298,7 +298,7 @@ export default function StudyGroupPage() {
             ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 32 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 24, marginBottom: 32 }}>
             <div className="card" style={{ padding: 24 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <span className="badge badge-neutral">📖 Shared Educational Material</span>

@@ -355,7 +355,7 @@ export default function OnboardingPage() {
           {/* 5. Language Preference */}
           <div className="form-group" style={{ marginBottom: 24 }}>
             <label className="form-label">AI Tutor Explanation Dialect</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 12 }}>
               <label className={`option-label ${preferredLanguage === "en" ? "selected" : ""}`}>
                 <input
                   type="radio"

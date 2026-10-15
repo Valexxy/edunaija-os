@@ -128,7 +128,7 @@ export default function HomePage() {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
           gap: 20,
           maxWidth: 1100,
           margin: "0 auto 56px",

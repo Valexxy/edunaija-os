@@ -411,7 +411,7 @@ export default function TeacherPortalPage() {
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 12 }}>
           {cohorts.map((cohort) => {
             const isSelected = cohort.id === selectedCohortId;
             return (
@@ -755,7 +755,7 @@ export default function TeacherPortalPage() {
 
       {/* TAB 4: 1-CLICK MULTI-CHANNEL DRILL DISPATCHER & REGISTER COHORT */}
       {activeTab === "dispatch" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 24 }}>
           {/* Dispatcher Card */}
           <section
             className="glass-card"

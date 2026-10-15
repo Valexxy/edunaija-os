@@ -477,7 +477,7 @@ export function MistakeVaultAutopsy({ educationLevel, classLabel, academicTrack 
       </div>
 
       {/* Two Column Layout: List & Deep Autopsy Panel */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 18 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 18 }}>
         {/* Left Column: Misconception List */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filteredItems.map((item) => (

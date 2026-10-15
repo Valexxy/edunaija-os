@@ -126,7 +126,7 @@ export function VettedTutorsHub() {
           <p style={{ color: "var(--muted)" }}>Try adjusting your subject or state selection above.</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 20 }}>
           {filteredTutors.map((tutor) => (
             <div
               key={tutor.id}

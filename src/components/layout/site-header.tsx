@@ -381,7 +381,7 @@ export function SiteHeader() {
         { href: "/curriculum", label: "NCEE Primary Syllabus", icon: "📚", description: "Official National Common Entrance subjects & topics" },
         { href: "/challenges", label: "Primary Mental Math Derby", icon: "🧮", description: "LGA & State math challenges for primary pupils" },
         { href: "/progress", label: "Pupil Growth & Mistake Vault", icon: "🌱", description: "Foundational numeracy & literacy mastery tracker" },
-        { href: "/tutoring", label: "TRCN Primary Tutors", icon: "👨‍🏫", description: "Vetted early education mentors & homework guides" },
+        { href: "/tutors", label: "TRCN Primary Tutors", icon: "👨‍🏫", description: "Vetted early education mentors & homework guides" },
         { href: "/study-group", label: "Peer Learning Circles", icon: "👥", description: "Collaborative whiteboard co-solving rooms" }
       ]
     : isJuniorScholar
@@ -389,7 +389,7 @@ export function SiteHeader() {
         { href: "/curriculum", label: "BECE / Junior WAEC Bank", icon: "📚", description: "Basic Science, Tech, Math & English NERDC syllabi" },
         { href: "/challenges", label: "Junior STEM Tournaments", icon: "⚡", description: "State & national JSS science and robotics challenges" },
         { href: "/progress", label: "Junior Mastery Index", icon: "🎯", description: "BECE diagnostic analytics & misconception autopsy" },
-        { href: "/tutoring", label: "TRCN Junior Tutors", icon: "👨‍🏫", description: "1-on-1 verified junior secondary mentors" },
+        { href: "/tutors", label: "TRCN Junior Tutors", icon: "👨‍🏫", description: "1-on-1 verified junior secondary mentors" },
         { href: "/study-group", label: "Study Circles", icon: "👥", description: "Synchronized peer co-solving & study groups" }
       ]
     : [
@@ -397,7 +397,7 @@ export function SiteHeader() {
         { href: "/curriculum", label: "WAEC / JAMB UTME Syllabus", icon: "📚", description: "Official NERDC, WAEC & JAMB syllabus topics" },
         { href: "/progress", label: "Mistake Vault & UTME Forecast", icon: "🎯", description: "Diagnostic mastery index & predictive cutoff model" },
         { href: "/challenges", label: "National Merit Tournaments", icon: "🏆", description: "All-Nigeria Olympiad and 774 LGA SSS leaderboards" },
-        { href: "/tutoring", label: "Find Vetted TRCN Tutors", icon: "👨‍🏫", description: "1-on-1 verified subject specialists & discovery calls" },
+        { href: "/tutors", label: "Find Vetted TRCN Tutors", icon: "👨‍🏫", description: "1-on-1 verified subject specialists & discovery calls" },
         { href: "/pricing", label: "Subscription Plans", icon: "💎", description: "Tier subsidies, data grants & premium prep" }
       ];
 
@@ -1116,19 +1116,21 @@ export function SiteHeader() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: 2,
-            padding: "6px 12px",
-            fontSize: "0.72rem",
+            padding: "4px 6px",
+            fontSize: "0.68rem",
             fontWeight: 700,
             color:
               pathname === (isGuardianRole ? "/guardian" : isTeacherRole ? "/teacher" : "/dashboard")
                 ? "var(--brand)"
                 : "var(--muted)",
-            textDecoration: "none"
+            textDecoration: "none",
+            touchAction: "manipulation"
           }}
         >
-          <span style={{ fontSize: "1.2rem" }}>{isGuardianRole ? "🛡️" : isTeacherRole ? "🧑‍🏫" : "📊"}</span>
-          <span>{isGuardianRole ? "Ward Hub" : isTeacherRole ? "Cockpit" : "Dashboard"}</span>
+          <span style={{ fontSize: "1.15rem" }}>{isGuardianRole ? "🛡️" : isTeacherRole ? "🧑‍🏫" : "📊"}</span>
+          <span>{isGuardianRole ? "Ward" : isTeacherRole ? "Cockpit" : "Home"}</span>
         </Link>
 
         {/* Item 2: Assessment / Item Bank / CBT */}
@@ -1139,16 +1141,18 @@ export function SiteHeader() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: 2,
-            padding: "6px 12px",
-            fontSize: "0.72rem",
+            padding: "4px 6px",
+            fontSize: "0.68rem",
             fontWeight: 700,
             color: pathname.startsWith("/assessments") ? "var(--brand)" : "var(--muted)",
-            textDecoration: "none"
+            textDecoration: "none",
+            touchAction: "manipulation"
           }}
         >
-          <span style={{ fontSize: "1.2rem" }}>{isGuardianRole ? "📋" : isTeacherRole ? "📋" : "📝"}</span>
-          <span>{isGuardianRole ? "Ward Audits" : isTeacherRole ? "Item Bank" : "CBT Exams"}</span>
+          <span style={{ fontSize: "1.15rem" }}>{isGuardianRole ? "📋" : isTeacherRole ? "📋" : "📝"}</span>
+          <span>{isGuardianRole ? "Audits" : isTeacherRole ? "Bank" : "Exams"}</span>
         </Link>
 
         {/* Item 3: Progress / Syllabus / AI Tutor */}
@@ -1161,18 +1165,20 @@ export function SiteHeader() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: 2,
-            padding: "6px 12px",
-            fontSize: "0.72rem",
+            padding: "4px 6px",
+            fontSize: "0.68rem",
             fontWeight: 700,
             color:
               pathname.startsWith(isGuardianRole ? "/progress" : isTeacherRole ? "/curriculum" : "/tutor")
                 ? "var(--brand)"
                 : "var(--muted)",
-            textDecoration: "none"
+            textDecoration: "none",
+            touchAction: "manipulation"
           }}
         >
-          <span style={{ fontSize: "1.2rem" }}>{isGuardianRole ? "📊" : isTeacherRole ? "📚" : "🤖"}</span>
+          <span style={{ fontSize: "1.15rem" }}>{isGuardianRole ? "📊" : isTeacherRole ? "📚" : "🤖"}</span>
           <span>{isGuardianRole ? "Progress" : isTeacherRole ? "Syllabus" : "AI Tutor"}</span>
         </Link>
 
@@ -1186,20 +1192,49 @@ export function SiteHeader() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: 2,
-            padding: "6px 12px",
-            fontSize: "0.72rem",
+            padding: "4px 6px",
+            fontSize: "0.68rem",
             fontWeight: 700,
             color:
               pathname.startsWith(isGuardianRole ? "/tutor" : isTeacherRole ? "/tutor" : "/challenges")
                 ? "var(--brand)"
                 : "var(--muted)",
-            textDecoration: "none"
+            textDecoration: "none",
+            touchAction: "manipulation"
           }}
         >
-          <span style={{ fontSize: "1.2rem" }}>{isGuardianRole ? "🍲" : isTeacherRole ? "🤖" : "🏆"}</span>
-          <span>{isGuardianRole ? "Parent Coach" : isTeacherRole ? "Lesson Prep" : "Challenges"}</span>
+          <span style={{ fontSize: "1.15rem" }}>{isGuardianRole ? "🍲" : isTeacherRole ? "🤖" : "🏆"}</span>
+          <span>{isGuardianRole ? "Coach" : isTeacherRole ? "Prep" : "Arena"}</span>
         </Link>
+
+        {/* Item 5: Thumb-Accessible Menu Drawer Trigger */}
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className={`dock-item ${isMobileMenuOpen ? "active" : ""}`}
+          style={{
+            background: "transparent",
+            border: "none",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            padding: "4px 6px",
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            color: isMobileMenuOpen ? "var(--brand)" : "var(--muted)",
+            cursor: "pointer",
+            touchAction: "manipulation"
+          }}
+          aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open full navigation menu"}
+          aria-expanded={isMobileMenuOpen}
+        >
+          <span style={{ fontSize: "1.15rem" }}>{isMobileMenuOpen ? "✕" : "☰"}</span>
+          <span>{isMobileMenuOpen ? "Close" : "Menu"}</span>
+        </button>
       </nav>
 
       {/* Full Sovereign Nigerian Learner Profile & ID Card Modal */}

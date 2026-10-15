@@ -63,7 +63,7 @@ export default function PricingPage() {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, marginBottom: 40 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 24, marginBottom: 40 }}>
         {/* Free Plan */}
         <div className="card" style={{ padding: 32, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div>

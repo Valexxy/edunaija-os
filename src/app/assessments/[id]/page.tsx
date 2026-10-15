@@ -457,7 +457,7 @@ export default function AssessmentExamPage({
             <div style={{ fontWeight: 700, marginBottom: 8, fontSize: "0.95rem" }}>
               🔍 Student Parameter Verification Report
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: "0.88rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 10, fontSize: "0.88rem" }}>
               <div><strong>Target Class:</strong> {targetClass}</div>
               <div><strong>Target Exam Standard:</strong> {targetExam}</div>
               <div><strong>State Curriculum Track:</strong> {learnerProfile?.state_name || "National"}</div>
@@ -835,14 +835,15 @@ export default function AssessmentExamPage({
               key={q.id}
               onClick={() => setCurrentIndex(idx)}
               style={{
-                width: 38,
-                height: 38,
+                minWidth: 40,
+                height: 40,
                 borderRadius: 8,
                 border: isCurrent ? "2px solid var(--brand)" : "1px solid var(--line)",
                 background: isAnswered ? "var(--brand-light)" : "var(--surface)",
                 color: isAnswered ? "var(--brand-dark)" : "var(--ink)",
                 fontWeight: 700,
-                cursor: "pointer"
+                cursor: "pointer",
+                touchAction: "manipulation"
               }}
             >
               {idx + 1}
