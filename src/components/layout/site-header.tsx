@@ -7,6 +7,7 @@ import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabas
 import { ThemeToggle } from "@/components/navigation/theme-toggle";
 import { BackButton } from "@/components/navigation/back-button";
 import { UserProfileModal } from "@/components/profile/user-profile-modal";
+import { MobileDrawerPersonaSwitcher } from "@/components/demo/persona-switcher";
 import type { User } from "@supabase/supabase-js";
 
 interface HeaderUserProfile {
@@ -437,7 +438,71 @@ export function SiteHeader() {
               <strong>Demo Sandbox Mode:</strong> You are evaluating as <strong>{displayName}</strong> ({roleLabel}). Real data is not modified.
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {roleLabel !== "Teacher" ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (typeof window !== "undefined") {
+                    sessionStorage.removeItem("learnnaija_session_user");
+                  }
+                  await fetch("/api/auth/demo-switch", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ personaId: "demo-teacher-007" })
+                  });
+                  window.location.href = "/teacher";
+                }}
+                style={{
+                  background: "#047857",
+                  border: "none",
+                  color: "#ffffff",
+                  padding: "3px 10px",
+                  borderRadius: 6,
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4
+                }}
+              >
+                <span>🧑‍🏫</span>
+                <span>Switch to Teacher Demo</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (typeof window !== "undefined") {
+                    sessionStorage.removeItem("learnnaija_session_user");
+                  }
+                  await fetch("/api/auth/demo-switch", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ personaId: "demo-student-user-001" })
+                  });
+                  window.location.href = "/dashboard";
+                }}
+                style={{
+                  background: "#0284c7",
+                  border: "none",
+                  color: "#ffffff",
+                  padding: "3px 10px",
+                  borderRadius: 6,
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4
+                }}
+              >
+                <span>🎓</span>
+                <span>Switch to Student Demo</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleExitDemo}
@@ -1008,6 +1073,9 @@ export function SiteHeader() {
                 </Link>
               </div>
             )}
+
+            {/* Quick 1-Click Demo Persona Switcher (Teacher, Parent, Student) */}
+            <MobileDrawerPersonaSwitcher onClose={() => setIsMobileMenuOpen(false)} />
 
             {/* Categorized Full Navigation List (Nothing Hidden!) */}
             <div style={{ padding: "14px 16px", flex: 1, overflowY: "auto" }}>

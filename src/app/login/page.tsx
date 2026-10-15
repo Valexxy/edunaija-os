@@ -182,24 +182,146 @@ export default function LoginPage() {
           </span>
         </div>
 
-        <div style={{ margin: "24px 0", textAlign: "center", position: "relative" }}>
+        <div style={{ margin: "24px 0 16px", textAlign: "center", position: "relative" }}>
           <hr style={{ border: "none", borderTop: "1px solid var(--line)" }} />
-          <span style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "var(--surface)", padding: "0 10px", fontSize: "0.78rem", color: "var(--muted)", fontWeight: 700 }}>
-            1-CLICK DEMO TEST ACCOUNTS
+          <span style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "var(--surface)", padding: "0 10px", fontSize: "0.78rem", color: "var(--brand)", fontWeight: 800, textTransform: "uppercase" }}>
+            🧪 1-CLICK INSTANT DEMO ACCOUNTS
           </span>
         </div>
 
-        <p style={{ fontSize: "0.82rem", color: "var(--muted)", textAlign: "center", margin: "0 0 12px" }}>
-          Instantly test isolated journeys across all 7 Nigerian academic &amp; stakeholder tiers:
+        <p style={{ fontSize: "0.82rem", color: "var(--muted)", textAlign: "center", margin: "0 0 14px" }}>
+          Select an educator, guardian, or scholar journey to test immediately with real simulated cohort data:
         </p>
+
+        {/* 🌟 FEATURED: TRCN Certified Teacher Demo */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(2, 132, 199, 0.08) 100%)",
+            border: "1.5px solid rgba(16, 185, 129, 0.4)",
+            borderRadius: 16,
+            padding: "16px",
+            marginBottom: 14,
+            boxShadow: "0 4px 14px rgba(16, 185, 129, 0.15)"
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: "1.8rem" }}>🧑‍🏫</span>
+              <div>
+                <strong style={{ fontSize: "0.95rem", color: "var(--ink)" }}>Mr. Chinedu Eze, M.Ed</strong>
+                <div style={{ fontSize: "0.76rem", color: "var(--muted)" }}>
+                  TRCN Licensed Educator • Federal Government College Enugu
+                </div>
+              </div>
+            </div>
+            <span className="badge badge-success" style={{ fontSize: "0.7rem", padding: "2px 8px" }}>
+              TEACHER DEMO
+            </span>
+          </div>
+          <p style={{ fontSize: "0.78rem", color: "var(--muted)", margin: "0 0 12px", lineHeight: 1.4 }}>
+            Test teaching 42 students, detecting learning misconceptions on the Diagnostic Radar, dispatching WAEC/JAMB drills, and launching the proctored virtual classroom.
+          </p>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                if (typeof window !== "undefined") {
+                  sessionStorage.removeItem("learnnaija_session_user");
+                }
+                await fetch("/api/auth/demo-switch", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ personaId: "demo-teacher-007" })
+                });
+                router.push("/teacher");
+                router.refresh();
+              } catch {
+                router.push("/teacher");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            className="btn btn-primary"
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+              borderColor: "#059669",
+              fontWeight: 800,
+              fontSize: "0.88rem",
+              padding: "10px",
+              boxShadow: "0 4px 12px rgba(5, 150, 105, 0.35)",
+              touchAction: "manipulation"
+            }}
+          >
+            🚀 Launch Teacher Cockpit Demo
+          </button>
+        </div>
+
+        {/* 👨‍👩‍👧 Parent / Guardian Demo */}
+        <div style={{ marginBottom: 14 }}>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                if (typeof window !== "undefined") {
+                  sessionStorage.removeItem("learnnaija_session_user");
+                }
+                await fetch("/api/auth/demo-switch", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ personaId: "demo-parent-006" })
+                });
+                router.push("/guardian");
+                router.refresh();
+              } catch {
+                router.push("/guardian");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            className="btn btn-secondary btn-sm"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+              padding: "10px 14px",
+              textAlign: "left",
+              borderRadius: 12,
+              touchAction: "manipulation"
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: "1.2rem" }}>👨‍👩‍👧</span>
+              <div>
+                <strong style={{ fontSize: "0.88rem", color: "var(--ink)" }}>Dr. Alabi Taiwo</strong>
+                <span style={{ fontSize: "0.74rem", color: "var(--muted)", display: "block" }}>
+                  Parent Portal • Audit 2 Minor Wards
+                </span>
+              </div>
+            </span>
+            <span className="badge badge-neutral" style={{ fontSize: "0.7rem" }}>
+              Parent Demo →
+            </span>
+          </button>
+        </div>
+
+        <div style={{ fontSize: "0.74rem", fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", marginBottom: 8, paddingLeft: 4 }}>
+          Nigerian Scholar Demos (By Academic Tier):
+        </div>
 
         <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
           {[
-            { id: "demo-primary-001", name: "Amina Bello", icon: "🎒", badge: "Primary 5 Pupil", target: "/dashboard" },
-            { id: "demo-jss-002", name: "Emeka Okafor", icon: "📘", badge: "JSS 3 Student", target: "/dashboard" },
             { id: "demo-student-user-001", name: "Chidi Okonkwo", icon: "🔬", badge: "SSS 3 Science", target: "/dashboard" },
             { id: "demo-sss-arts-004", name: "Folake Adeleke", icon: "🎭", badge: "SSS 2 Arts", target: "/dashboard" },
             { id: "demo-sss-commercial-005", name: "Babajide Sanwo", icon: "💼", badge: "SSS 3 Commercial", target: "/dashboard" },
+            { id: "demo-jss-002", name: "Emeka Okafor", icon: "📘", badge: "JSS 3 Student", target: "/dashboard" },
+            { id: "demo-primary-001", name: "Amina Bello", icon: "🎒", badge: "Primary 5 Pupil", target: "/dashboard" },
           ].map((p) => (
             <button
               key={p.id}
@@ -207,7 +329,9 @@ export default function LoginPage() {
               onClick={async () => {
                 setIsLoading(true);
                 try {
-                  sessionStorage.removeItem("learnnaija_session_user");
+                  if (typeof window !== "undefined") {
+                    sessionStorage.removeItem("learnnaija_session_user");
+                  }
                   await fetch("/api/auth/demo-switch", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -222,7 +346,7 @@ export default function LoginPage() {
                 }
               }}
               className="btn btn-secondary btn-sm"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", textAlign: "left" }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 12px", textAlign: "left", touchAction: "manipulation" }}
               disabled={isLoading}
             >
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -232,41 +356,6 @@ export default function LoginPage() {
               <span className="badge badge-success" style={{ fontSize: "0.72rem" }}>{p.badge}</span>
             </button>
           ))}
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 2 }}>
-            {[
-              { id: "demo-parent-006", name: "Dr. Taiwo", icon: "👨‍👩‍👧", badge: "Parent Portal", target: "/guardian" },
-              { id: "demo-teacher-007", name: "Mr. C. Eze", icon: "🧑‍🏫", badge: "TRCN Teacher", target: "/teacher" }
-            ].map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={async () => {
-                  setIsLoading(true);
-                  try {
-                    sessionStorage.removeItem("learnnaija_session_user");
-                    await fetch("/api/auth/demo-switch", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ personaId: p.id })
-                    });
-                    router.push(p.target);
-                    router.refresh();
-                  } catch {
-                    router.push(p.target);
-                  } finally {
-                    setIsLoading(false);
-                  }
-                }}
-                className="btn btn-secondary btn-sm"
-                style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, padding: "8px 10px", fontSize: "0.8rem" }}
-                disabled={isLoading}
-              >
-                <span>{p.icon}</span>
-                <span>{p.badge}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         <p style={{ textAlign: "center", fontSize: "0.9rem", marginTop: 20, marginBottom: 0 }}>

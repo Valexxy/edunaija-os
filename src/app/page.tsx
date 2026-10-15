@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { QuickDemoEvaluationBar } from "@/components/demo/persona-switcher";
 
 const modules = [
   {
@@ -83,6 +84,9 @@ export default function HomePage() {
             ⚔️ Peer Arena &amp; Competitions
           </Link>
         </div>
+
+        {/* 1-Click Evaluation Bar for Teachers, Parents, and Scholars */}
+        <QuickDemoEvaluationBar />
       </section>
 
       {/* Trust & Architecture Metrics Strip */}
