@@ -85,9 +85,23 @@ export function recordAnswer(
   fallbackAssessmentId?: string,
   userId?: string
 ): AttemptAnswer {
-  const attempt = attemptsStore.get(attemptId);
+  let attempt = attemptsStore.get(attemptId);
+  const isServerlessAttemptFormat = /^(att-\d+-[a-z0-9]+|offline-attempt-\d+)$/i.test(attemptId);
   if (!attempt) {
-    throw new Error(`Attempt not found: ${attemptId}`);
+    if (fallbackAssessmentId && isServerlessAttemptFormat) {
+      const match = attemptId.match(/^att-(\d+)-/);
+      const startedAt = match ? new Date(parseInt(match[1], 10)).toISOString() : new Date().toISOString();
+      attempt = {
+        id: attemptId,
+        assessment_id: fallbackAssessmentId,
+        learner_user_id: userId || "demo-student-user-001",
+        status: "in_progress",
+        started_at: startedAt
+      };
+      attemptsStore.set(attemptId, attempt);
+    } else {
+      throw new Error(`Attempt not found: ${attemptId}`);
+    }
   }
 
   if (userId && attempt.learner_user_id !== userId) {
@@ -122,9 +136,23 @@ export async function evaluateAndSubmitAttempt(
     clientSubmissionTimestamp?: string | number;
   }
 ): Promise<AssessmentEvaluationResult> {
-  const attempt = attemptsStore.get(attemptId);
+  let attempt = attemptsStore.get(attemptId);
+  const isServerlessAttemptFormat = /^(att-\d+-[a-z0-9]+|offline-attempt-\d+)$/i.test(attemptId);
   if (!attempt) {
-    throw new Error(`Attempt not found: ${attemptId}`);
+    if (fallbackAssessmentId && isServerlessAttemptFormat) {
+      const match = attemptId.match(/^att-(\d+)-/);
+      const startedAt = match ? new Date(parseInt(match[1], 10)).toISOString() : new Date().toISOString();
+      attempt = {
+        id: attemptId,
+        assessment_id: fallbackAssessmentId,
+        learner_user_id: userId || "demo-student-user-001",
+        status: "in_progress",
+        started_at: startedAt
+      };
+      attemptsStore.set(attemptId, attempt);
+    } else {
+      throw new Error(`Attempt not found: ${attemptId}`);
+    }
   }
 
   if (userId && attempt.learner_user_id !== userId) {
