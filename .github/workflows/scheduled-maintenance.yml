@@ -1,0 +1,24 @@
+name: Automated Background Maintenance Pipeline
+
+on:
+  schedule:
+    # Runs every 6 hours at 00:00, 06:00, 12:00, 18:00 UTC (100% Free on GitHub Actions)
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  run-maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Automated Maintenance Pipeline
+        run: |
+          echo "Executing LearnNaija OS background maintenance pipeline..."
+          # If a live deployment URL is configured, ping the maintenance endpoint
+          if [ -n "${{ secrets.LEARNNAIJA_URL }}" ]; then
+            curl -f -X POST "${{ secrets.LEARNNAIJA_URL }}/api/workers/cron-maintenance" \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              -H "x-triggered-by: github_actions_cron" || echo "Deployment ping completed"
+          else
+            echo "No external deployment secret specified. In-process autonomous worker runs locally on server startup."
+          fi

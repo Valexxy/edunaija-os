@@ -1,0 +1,91 @@
+{
+  "name": "LearnNaija OS — Sovereign Nigerian Learning Platform",
+  "short_name": "LearnNaija",
+  "description": "Curriculum-aligned AI personal tutor and CBT exam preparation for Nigerian students and families.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B1510",
+  "theme_color": "#047857",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "CBT Exam Practice",
+      "short_name": "CBT Exam",
+      "description": "Launch timed WAEC, JAMB, or NECO CBT simulation",
+      "url": "/assessments",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Socratic AI Tutor",
+      "short_name": "AI Tutor",
+      "description": "Ask Sister Amaka or Brother Femi for homework help",
+      "url": "/tutor",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Tournament League",
+      "short_name": "League",
+      "description": "Compete in LGA and National Scholastic Pyramid",
+      "url": "/challenges",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "NERDC Curriculum",
+      "short_name": "Curriculum",
+      "description": "Explore statutory Nigerian subjects and topics",
+      "url": "/curriculum",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
